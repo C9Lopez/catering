@@ -69,10 +69,13 @@
         }
 
         footer {
-            background-color: #343a40;
+            background-color: #333;
             color: #fff;
             text-align: center;
-            padding: 10px 0;
+            padding: 1px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
         }
     </style>
 </head>

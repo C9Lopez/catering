@@ -44,7 +44,7 @@
             background-color: #333;
             color: #fff;
             text-align: center;
-            padding: 10px;
+            padding: 1px;
             position: fixed;
             bottom: 0;
             width: 100%;
