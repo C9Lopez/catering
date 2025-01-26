@@ -1,21 +1,36 @@
 <?php
+session_start();
+
 include 'db.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = md5($_POST['password']); // MD5 encryption
 
-    // Check if the user exists
-    $sql = "SELECT * FROM users WHERE email='$email' AND password='$password'";
-    $result = mysqli_query($conn, $sql);
+    // check if user exist
+    $stmt = $db->prepare("SELECT * FROM users WHERE email = :email AND password = :password");
 
-    if (mysqli_num_rows($result) > 0) {
-        echo "Login successful!";
-        // Start session and redirect to a protected page
+    $stmt->bindParam(':email', $email);
+    $stmt->bindParam(':password', $password);
+
+    // Execute the statement
+    $stmt->execute();
+
+    // Fetch the user data
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if($result) {
+        // Store user data in session
+        $_SESSION['user_id'] = $result['id']; 
+        $_SESSION['user_email'] = $result['email']; 
+        // Redirect to index.php
+        header("Location: index.php");
+        exit(); 
     } else {
-        echo "Invalid email or password.";
+        echo "Email or password does not match";
     }
 }
+
 ?>
 
 <!DOCTYPE html>

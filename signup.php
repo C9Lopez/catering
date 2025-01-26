@@ -2,33 +2,47 @@
 include 'db.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $first_name = $_POST['first_name'];
-    $middle_name = $_POST['middle_name'];
-    $last_name = $_POST['last_name'];
-    $birthdate = $_POST['birthdate'];
-    $gender = $_POST['gender'];
-    $address = $_POST['address'];
-    $contact_no = $_POST['contact_no'];
-    $email = $_POST['email'];
-    $password = md5($_POST['password']); // MD5 encryption
+    $first_name     = $_POST['first_name'];
+    $middle_name    = $_POST['middle_name'];
+    $last_name      = $_POST['last_name'];
+    $birthdate      = $_POST['birthdate'];
+    $gender         = $_POST['gender'];
+    $address        = $_POST['address'];
+    $contact_no     = $_POST['contact_no'];
+    $email          = $_POST['email'];
+    $password       = md5($_POST['password']); // MD5 encryption
 
-    // Insert user into the database
-    $sql = "INSERT INTO users (first_name, middle_name, last_name, birthdate, gender, address, contact_no, email, password) 
-            VALUES ('$first_name', '$middle_name', '$last_name', '$birthdate', '$gender', '$address', '$contact_no', '$email', '$password')";
 
-    if (mysqli_query($conn, $sql)) {
-        echo "New record created successfully";
-    } else {
-        echo "Error: " . $sql . "<br>" . mysqli_error($conn);
+    try {
+        $stmt = $db->prepare("INSERT INTO users (first_name, middle_name, last_name, birthdate, gender, address, contact_no, email, password) 
+                                VALUES (:first_name, :middle_name, :last_name, :birthdate, :gender, :address, :contact_no, :email, :password)");
+        $stmt->bindParam(':first_name', $first_name);
+        $stmt->bindParam(':middle_name', $middle_name);
+        $stmt->bindParam(':last_name', $last_name);
+        $stmt->bindParam(':birthdate', $birthdate);
+        $stmt->bindParam(':gender', $gender);
+        $stmt->bindParam(':address', $address);
+        $stmt->bindParam(':contact_no', $contact_no);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':password', $password);
+        $stmt->execute();
+
+        echo "<div class='alert alert-success mt-3' role='alert'>User added successfully!</div>";
+    } catch(PDOException $e) {
+        echo "<div class='alert alert-danger mt-3' role='alert'>Error: " . $e->getMessage() . "</div>";
     }
+
+
 }
 ?>
 
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Signup</title>
 </head>
+
 <body>
     <h2>Signup</h2>
     <form method="post" action="">
@@ -48,4 +62,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <input type="submit" value="Signup">
     </form>
 </body>
+
 </html>

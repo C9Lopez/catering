@@ -1,4 +1,13 @@
-<?php require_once 'db.php'; ?>
+<?php require_once 'db.php';
+
+session_start();
+if (isset($_SESSION['user_id'])) {
+    echo "<p>Logged in as: " . $_SESSION['user_email'] . "</p>";
+} else {
+    echo "<p>Not logged in.</p>";
+}
+?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -84,6 +93,7 @@
 <header>
     <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container">
+            <a href='logout.php'>logout</a>
             <a class="navbar-brand" href="#">Pochie Catering Service</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
