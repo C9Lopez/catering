@@ -10,41 +10,32 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         body {
-            font-family: sans-serif;
+            font-family: 'Nunito', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
         }
-
         header {
-            background-color: #f8f9fa;
-            padding: 20px;
+            background-color: #007bff;
+            padding: 10px 0;
+            color: #ffffff;
         }
-
         .navbar-brand {
             font-weight: bold;
+            color: #fff;
         }
-
-        .navbar-nav .nav-link {
-            color: #333;
-        }
-
-        .navbar-nav .nav-link:hover {
-            color: #007bff;
-        }
-
         section {
-            padding: 40px 0;
+            padding: 20px;
+            background: #fff;
+            margin: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
         footer {
-            background-color: #333;
+            background-color: #007bff;
             color: #fff;
             text-align: center;
-            padding: 1px;
+            padding: 10px 0;
             position: fixed;
             bottom: 0;
             width: 100%;
@@ -53,40 +44,15 @@
 </head>
 <body>
 
-<header>
-    <nav class="navbar navbar-expand-lg navbar-light">
+<header class="text-center">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand" href="#">Pochie Catering Service</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                        <a class="nav-link" href="index.php">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.php">Event Booking</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="Menus.php">Menu</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="Menus.php">About Us</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="Menus.php">Profile</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="Management.php">Management Console</a>
-                    </li>
-                </ul>
-            </div>
+            <a class="navbar-brand" href="#">Pochie Catering Service Admin Console</a>
         </div>
     </nav>
 </header>
 
-<section class="add-product container">
+<section class="container">
     <h2>Add New Product</h2>
     <form action="create.php" method="post" class="row g-3">
         <div class="col-md-6">
@@ -99,7 +65,7 @@
         </div>
         <div class="col-12">
             <label for="description" class="form-label">Description:</label>
-            <textarea id="description" name="description" class="form-control"></textarea>
+            <textarea id="description" name="description" class="form-control" rows="3"></textarea>
         </div>
         <div class="col-12">
             <button type="submit" class="btn btn-primary">Add Product</button>
@@ -125,7 +91,6 @@
     }
     ?>
 </section>
-
 
 <footer>
     <p>&copy; 2023 Your Catering Service</p>

@@ -9,42 +9,33 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        body {
-            font-family: sans-serif;
+       body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
         }
-
         header {
-            background-color: #f8f9fa;
-            padding: 20px;
+            background-color: #007bff;
+            padding: 10px 0;
+            color: #ffffff;
         }
-
         .navbar-brand {
             font-weight: bold;
+            color: #fff;
         }
-
-        .navbar-nav .nav-link {
-            color: #333;
-        }
-
-        .navbar-nav .nav-link:hover {
-            color: #007bff;
-        }
-
         section {
-            padding: 40px 0;
+            padding: 20px;
+            background: #fff;
+            margin: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
         footer {
-            background-color: #333;
+            background-color: #007bff;
             color: #fff;
             text-align: center;
-            padding: 1px;
+            padding: 10px 0;
             position: fixed;
             bottom: 0;
             width: 100%;
@@ -56,34 +47,8 @@
 <header>
     <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container">
-            <a class="navbar-brand" href="#">Pochie Catering Service</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                        <a class="nav-link" href="index.php">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.php">Event Booking</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="Menus.php">Menu</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="Menus.php">About Us</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="Menus.php">Profile</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="Management.php">Management Console</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+            <a class="navbar-brand" href="#">Pochie Catering Service - Management Console</a>
+           
 </header>
 
 <section class="add-product container">

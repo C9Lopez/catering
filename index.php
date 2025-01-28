@@ -104,7 +104,7 @@ if (isset($_SESSION['user_id'])) {
                         <a class="nav-link" href="index.php">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="index.php">Event Booking</a>
+                        <a class="nav-link" href="eventbooking.php">Event Booking</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="Menus.php">Menu</a>
@@ -142,6 +142,8 @@ if (isset($_SESSION['user_id'])) {
         </div>
     </div>
 </section>
+
+
 
 <section class="services container">
     <div class="row">
