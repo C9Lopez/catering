@@ -1,6 +1,5 @@
 <?php
-// Include database connection
-include('db.php');
+require 'db.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $event_type = $_POST['event_type'];
@@ -11,14 +10,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $client_email = $_POST['client_email'];
     $client_phone = $_POST['client_phone'];
 
-    // Insert into database
-    $stmt = $db->prepare = "INSERT INTO event_bookings (event_type, event_date, number_of_guests, additional_requests, client_name, client_email, client_phone) 
-            VALUES ('$event_type', '$event_date', '$number_of_guests', '$additional_requests', '$client_name', '$client_email', '$client_phone')";
-
-    if (mysqli_query($db, $sql)) {
+    try {
+        $stmt = $db->prepare("INSERT INTO event_bookings (event_type, event_date, number_of_guests, additional_requests, client_name, client_email, client_phone) 
+                               VALUES (:event_type, :event_date, :number_of_guests, :additional_requests, :client_name, :client_email, :client_phone)");
+        $stmt->bindParam(':event_type', $event_type);
+        $stmt->bindParam(':event_date', $event_date);
+        $stmt->bindParam(':number_of_guests', $number_of_guests);
+        $stmt->bindParam(':additional_requests', $additional_requests);
+        $stmt->bindParam(':client_name', $client_name);
+        $stmt->bindParam(':client_email', $client_email);
+        $stmt->bindParam(':client_phone', $client_phone);
+        $stmt->execute();
         $success_message = "Booking successful!";
-    } else {
-        $error_message = "Error: " . mysqli_error($db);
+    } catch (PDOException $e) {
+        $error_message = "Error: " . $e->getMessage();
     }
 }
 ?>
@@ -32,8 +37,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
     <h1>Event Booking</h1>
-    <?php if (isset($success_message)) { echo "<p>$success_message</p>"; } ?>
-    <?php if (isset($error_message)) { echo "<p>$error_message</p>"; } ?>
+    <?php if (isset($success_message)) { echo "<div class='alert alert-success'>$success_message</div>"; } ?>
+    <?php if (isset($error_message)) { echo "<div class='alert alert-danger'>$error_message</div>"; } ?>
     <form method="POST" action="">
         <label for="event_type">Event Type:</label>
         <input type="text" id="event_type" name="event_type" required><br>
