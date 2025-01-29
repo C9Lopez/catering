@@ -1,4 +1,5 @@
-<?php require_once 'db.php';
+<?php 
+require_once 'db.php';
 
 session_start();
 if (isset($_SESSION['user_id'])) {
@@ -7,7 +8,6 @@ if (isset($_SESSION['user_id'])) {
     echo "<p>Not logged in.</p>";
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -93,7 +93,6 @@ if (isset($_SESSION['user_id'])) {
 <header>
     <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container">
-            <a href='logout.php'>logout</a>
             <a class="navbar-brand" href="#">Pochie Catering Service</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -118,6 +117,18 @@ if (isset($_SESSION['user_id'])) {
                     <li class="nav-item">
                         <a class="nav-link" href="Management.php">Management Console</a>
                     </li>
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <li class="nav-item">
+                            <a href='logout.php' class="nav-link">Logout</a>
+                        </li>
+                    <?php else: ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="login.php">Log In</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="signup.php">Sign Up</a>
+                        </li>
+                    <?php endif; ?>
                     <li class="nav-item">
                         <a class="nav-link" href="#" id="cart-link">
                             <i class="fas fa-shopping-cart"></i>
@@ -142,8 +153,6 @@ if (isset($_SESSION['user_id'])) {
         </div>
     </div>
 </section>
-
-
 
 <section class="services container">
     <div class="row">
@@ -191,48 +200,48 @@ if (isset($_SESSION['user_id'])) {
         </div>
         <div class="col-md-12">
             <div class="card mb-4">
-            <div class="card-body">
-            <h5 class="card-title">Jane Smith</h5>
-            <p class="card-text">I was very impressed with the quality of the food and the professionalism of the staff. I will definitely be using this catering service again.</p>
-            <div class="star-rating">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star-half-alt"></i>
+                <div class="card-body">
+                    <h5 class="card-title">Jane Smith</h5>
+                    <p class="card-text">I was very impressed with the quality of the food and the professionalism of the staff. I will definitely be using this catering service again.</p>
+                    <div class="star-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Peter Jones</h5>
+                    <p class="card-text">The catering service exceeded my expectations. The food was beautifully presented and tasted amazing. I highly recommend them for any event.</p>
+                    <div class="star-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
-<div class="col-md-12">
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Peter Jones</h5>
-            <p class="card-text">The catering service exceeded my expectations. The food was beautifully presented and tasted amazing. I highly recommend them for any event.</p>
-            <div class="star-rating">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="far fa-star"></i>
-            </div>
-        </div>
-    </div>
-</div>
-</div>
 </section>
 
 <section class="contact container">
-<h2>Contact Us</h2>
-<p>Please contact us to discuss your catering needs.</p>
-<p>Email: <a href="mailto:info@yourcateringservice.com">info@yourcateringservice.com</a></p>
-<p>Phone: <a href="tel:+15551234567">+1-555-123-4567</a></p>
+    <h2>Contact Us</h2>
+    <p>Please contact us to discuss your catering needs.</p>
+    <p>Email: <a href="mailto:info@yourcateringservice.com">info@yourcateringservice.com</a></p>
+    <p>Phone: <a href="tel:+15551234567">+1-555-123-4567</a></p>
 </section>
 
 <footer>
-<div class="container">
-<p>&copy; 2023 Your Catering Service</p>
-</div>
+    <div class="container">
+        <p>&copy; 2023 Your Catering Service</p>
+    </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
