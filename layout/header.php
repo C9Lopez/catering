@@ -17,7 +17,7 @@
                         <a class="nav-link" href="menus.php">Menu</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="menus.php">About Us</a>
+                        <a class="nav-link" href="about.php">About Us</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="profile.php">Profile</a>
@@ -48,3 +48,24 @@
         </div>
     </nav>
 </header>
+<style>
+    .nav-link.active {
+    font-weight: bold;
+    color:rgb(62, 120, 245) !important; 
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    let currentPage = window.location.pathname.split("/").pop();
+    let navLinks = document.querySelectorAll(".nav-link"); 
+
+    navLinks.forEach(link => {
+        let linkPage = link.getAttribute("href").split("/").pop(); 
+        if (linkPage === currentPage) {
+            link.classList.add("active");
+        }
+    });
+});
+</script>
