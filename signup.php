@@ -39,6 +39,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 
 <body>
+
+<?php include_once './layout/header.php'?>
+
     <h2>Signup</h2>
     <form method="post" action="">
         <input type="text" name="first_name" placeholder="first_name" required><br>
