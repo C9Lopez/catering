@@ -19,16 +19,13 @@
                     <li class="nav-item">
                         <a class="nav-link" href="about.php">About Us</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="profile.php">Profile</a>
-                    </li>
                     <!-- <li class="nav-item">
                         <a class="nav-link" href="Management.php">Management Console</a>
                     </li> -->
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <li class="nav-item">
-                            <a href='logout.php' class="nav-link">Logout</a>
-                        </li>
+                        <a class="nav-link" href="profile.php">Profile</a>
+                    </li>
                     <?php else: ?>
                         <li class="nav-item">
                             <a class="nav-link" href="login.php">Log In</a>
