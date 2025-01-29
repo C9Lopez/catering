@@ -14,13 +14,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Fetch the user data
     if ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
         if (password_verify($password, $result['password'])) {
-            // Store user data in session
-            $_SESSION['user_id'] = $result['id'];
+            $_SESSION['user_id'] = $result['user_id'];
             $_SESSION['user_email'] = $result['email'];
-            // Redirect to index.php
+            $_SESSION['first_name'] = $result['first_name'];
+            $_SESSION['last_name'] = $result['last_name'];
+            // $_SESSION['user_email'] = $result['email'];
             header("Location: index.php");
             exit();
         }
+        echo "<p>Logged in as: " . $_SESSION['user_email'] . "</p>";
+
     }
     // Generic error message for security
     echo "Invalid login credentials.";
