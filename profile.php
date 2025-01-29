@@ -24,6 +24,7 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="container mt-5">
+<?php include_once './layout/header.php'?>
 
 <h1 class="mb-3">Profile</h1>
 

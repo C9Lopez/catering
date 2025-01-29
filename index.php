@@ -2,11 +2,7 @@
 require_once 'db.php';
 
 session_start();
-if (isset($_SESSION['user_id'])) {
-    echo "<p>Logged in as: " . $_SESSION['user_email'] . "</p>";
-} else {
-    echo "<p>Not logged in.</p>";
-}
+
 ?>
 
 <!DOCTYPE html>
@@ -17,76 +13,7 @@ if (isset($_SESSION['user_id'])) {
     <title>Pochie Catering Service</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <style>
-        body {
-            font-family: sans-serif;
-        }
-
-        header {
-            background-color: #f8f9fa;
-            padding: 20px;
-        }
-
-        .navbar-brand {
-            font-weight: bold;
-        }
-
-        .navbar-nav .nav-link {
-            color: #333;
-        }
-
-        .navbar-nav .nav-link:hover {
-            color: #007bff;
-        }
-
-        section {
-            padding: 40px 0;
-        }
-
-        .featured-menu img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .service-icon {
-            font-size: 3rem;
-            color: #007bff;
-            margin-bottom: 10px;
-        }
-
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        .star-rating i {
-            color: #ffc107;
-            font-size: 1.5rem;
-        }
-
-        .star-rating i:hover,
-        .star-rating i:hover ~ i {
-            color: #ff9800;
-        }
-
-        footer {
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            padding: 1px;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
-    </style>
+    <link rel="stylesheet" href="./styles/index.css">
 </head>
 <body>
 

@@ -14,17 +14,17 @@
                         <a class="nav-link" href="eventbooking.php">Event Booking</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="Menus.php">Menu</a>
+                        <a class="nav-link" href="menus.php">Menu</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="Menus.php">About Us</a>
+                        <a class="nav-link" href="menus.php">About Us</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="profile.php">Profile</a>
                     </li>
-                    <li class="nav-item">
+                    <!-- <li class="nav-item">
                         <a class="nav-link" href="Management.php">Management Console</a>
-                    </li>
+                    </li> -->
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <li class="nav-item">
                             <a href='logout.php' class="nav-link">Logout</a>
