@@ -54,7 +54,7 @@
             <h1 class="display-1 mb-4">Welcome to <span class="text-primary">Pochie Catering</span></h1>
             <p class="lead">Providing the best catering services for every occasion.</p>
             <a href="book.php" class="btn btn-primary py-3 px-5 rounded-pill wow bounceInLeft" data-wow-delay="0.5s">Book Now</a>
-            <a href="book.php" class="btn btn-primary py-3 px-5 rounded-pill wow bounceInLeft" data-wow-delay="0.5s">Book Now</a>
+            
             <a href="#" class="btn btn-primary border-0 rounded-pill py-3 px-4 px-md-5 animated bounceInLeft">Know More</a>
         </div>
     </div>
