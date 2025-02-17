@@ -1,0 +1,160 @@
+:root {
+    /* Light Theme */
+    --light-bg: #ffffff;
+    --light-text: #333333;
+    --light-primary: #0d6efd;
+    --light-secondary: #6c757d;
+    --light-nav: rgba(255, 255, 255, 0.95);
+    --light-card: rgba(255, 255, 255, 0.1);
+    --light-border: rgba(255, 255, 255, 0.2);
+
+    /* Dark Theme */
+    --dark-bg: #1a1a1a;
+    --dark-text: #ffffff;
+    --dark-primary: #3d8bfd;
+    --dark-secondary: #adb5bd;
+    --dark-nav: rgba(26, 26, 26, 0.95);
+    --dark-card: rgba(255, 255, 255, 0.05);
+    --dark-border: rgba(255, 255, 255, 0.1);
+
+    /* Dark Grey Theme */
+    --dark-grey-bg: #2c2c2c;
+    --dark-grey-text: #ffffff;
+    --dark-grey-primary: #4d94ff;
+    --dark-grey-secondary: #b8bec3;
+    --dark-grey-nav: rgba(44, 44, 44, 0.95);
+    --dark-grey-card: rgba(255, 255, 255, 0.05);
+    --dark-grey-border: rgba(255, 255, 255, 0.1);
+
+    /* Dark Blue Theme */
+    --dark-blue-bg: #1a2238;
+    --dark-blue-text: #ffffff;
+    --dark-blue-primary: #00a8ff;
+    --dark-blue-secondary: #9fafca;
+    --dark-blue-nav: rgba(26, 34, 56, 0.95);
+    --dark-blue-card: rgba(255, 255, 255, 0.05);
+    --dark-blue-border: rgba(255, 255, 255, 0.1);
+}
+
+/* Theme Classes */
+body.light-theme {
+    background-color: var(--light-bg);
+    color: var(--light-text);
+}
+
+body.dark-theme {
+    background-color: var(--dark-bg);
+    color: var(--dark-text);
+}
+
+body.dark-grey-theme {
+    background-color: var(--dark-grey-bg);
+    color: var(--dark-grey-text);
+}
+
+body.dark-blue-theme {
+    background-color: var(--dark-blue-bg);
+    color: var(--dark-blue-text);
+}
+
+/* Theme-specific styles */
+.light-theme .nav-bar {
+    background-color: var(--light-nav);
+}
+
+.dark-theme .nav-bar {
+    background-color: var(--dark-nav);
+}
+
+.dark-grey-theme .nav-bar {
+    background-color: var(--dark-grey-nav);
+}
+
+.dark-blue-theme .nav-bar {
+    background-color: var(--dark-blue-nav);
+}
+
+/* Glass Card Effects for different themes */
+.light-theme .glass-card {
+    background: var(--light-card);
+    border-color: var(--light-border);
+}
+
+.dark-theme .glass-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.dark-grey-theme .glass-card {
+    background: var(--dark-grey-card);
+    border-color: var(--dark-grey-border);
+}
+
+.dark-blue-theme .glass-card {
+    background: var(--dark-blue-card);
+    border-color: var(--dark-blue-border);
+}
+
+/* Theme Switcher Styles */
+.theme-switcher {
+    position: relative;
+    display: inline-block;
+    margin-left: 15px;
+}
+
+.theme-switcher select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 8px 35px 8px 15px;
+    border-radius: 20px;
+    border: 2px solid var(--light-primary);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.theme-switcher::after {
+    content: '▼';
+    font-size: 12px;
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+/* Theme-specific text colors */
+.light-theme .text-theme {
+    color: var(--light-text);
+}
+
+.dark-theme .text-theme {
+    color: var(--dark-text);
+}
+
+.dark-grey-theme .text-theme {
+    color: var(--dark-grey-text);
+}
+
+.dark-blue-theme .text-theme {
+    color: var(--dark-blue-text);
+}
+
+/* Theme-specific primary colors */
+.light-theme .text-primary {
+    color: var(--light-primary) !important;
+}
+
+.dark-theme .text-primary {
+    color: var(--dark-primary) !important;
+}
+
+.dark-grey-theme .text-primary {
+    color: var(--dark-grey-primary) !important;
+}
+
+.dark-blue-theme .text-primary {
+    color: var(--dark-blue-primary) !important;
+}

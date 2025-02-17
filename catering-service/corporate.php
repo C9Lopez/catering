@@ -1,0 +1,249 @@
+<?php
+  session_start();
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Corporate Catering - Pochie Catering</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playball&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="../lib/animate/animate.min.css" rel="stylesheet">
+    <link href="../lib/lightbox/css/lightbox.min.css" rel="stylesheet">
+    <link href="../lib/owlcarousel/owl.carousel.min.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="../css/style.css" rel="stylesheet">
+    <link href="../css/themes.css" rel="stylesheet">
+</head>
+<body class="light-theme">
+
+<!-- Loading Screen -->
+<div id="loading-screen">
+    <div class="loader"></div>
+</div>
+
+<?php include '../layout/navbar.php'; ?>
+
+    <!-- Hero Section -->
+    <div class="container-fluid hero-section py-6 my-6 text-center wow fadeInUp" data-wow-delay="0.3s">
+        <div class="hero-overlay"></div>
+        <div class="container position-relative text-white">
+            <h1 class="display-1 mb-4">Corporate <span class="text-primary">Catering</span></h1>
+            <p class="lead">Professional catering solutions for your business events and meetings.</p>
+            <a href="../book.php" class="btn btn-primary py-3 px-5 rounded-pill wow bounceInLeft" data-wow-delay="0.5s">Book Now</a>
+        </div>
+    </div>
+    <!-- Hero End -->
+
+    <!-- About Corporate Catering -->
+    <div class="container-fluid py-6 wow fadeInUp" data-wow-delay="0.3s">
+        <div class="container">
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-5 mb-4">Professional Corporate Catering</h1>
+                    <p class="mb-4">
+                        Elevate your corporate events with our professional catering services. Whether it's a business meeting, 
+                        conference, product launch, or company celebration, we deliver exceptional food and service that reflects 
+                        your company's standards of excellence.
+                    </p>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check text-primary me-3"></i>
+                                <span>Professional Service Staff</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check text-primary me-3"></i>
+                                <span>Flexible Menu Options</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check text-primary me-3"></i>
+                                <span>On-Time Delivery</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check text-primary me-3"></i>
+                                <span>Corporate Presentation</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 wow zoomIn" data-wow-delay="0.5s">
+                    <img src="../img/event-3.jpg" class="img-fluid rounded" alt="Corporate Catering">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Corporate Packages -->
+    <div class="container-fluid py-6 wow fadeInUp" data-wow-delay="0.3s">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h1 class="display-5">Corporate Packages</h1>
+                <p class="fs-5">Professional catering solutions for every business event</p>
+            </div>
+            <div class="row g-4">
+                <!-- Executive Package -->
+                <div class="col-lg-4 col-md-6 wow bounceInUp" data-wow-delay="0.1s">
+                    <div class="package-item rounded overflow-hidden">
+                        <div class="text-center p-4">
+                            <h3 class="mb-0">Executive Package</h3>
+                            <div class="mb-3">
+                                <small class="fa fa-star text-primary"></small>
+                                <small class="fa fa-star text-primary"></small>
+                                <small class="fa fa-star text-primary"></small>
+                            </div>
+                            <h1 class="mb-3">
+                                <small class="align-top" style="font-size: 22px; line-height: 45px;">₱</small>25,000<small class="align-bottom" style="font-size: 16px; line-height: 40px;">/ package</small>
+                            </h1>
+                        </div>
+                        <div class="p-4">
+                            <p><i class="fa fa-check text-primary me-2"></i>Professional Setup</p>
+                            <p><i class="fa fa-check text-primary me-2"></i>Up to 50 Guests</p>
+                            <p><i class="fa fa-check text-primary me-2"></i>Business Lunch Menu</p>
+                            <p><i class="fa fa-check text-primary me-2"></i>Basic Table Settings</p>
+                            <p><i class="fa fa-check text-primary me-2"></i>Service Staff</p>
+                            <a class="btn-slide mt-2" href="../book.php"><i class="fa fa-arrow-right"></i><span>Book Now</span></a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Premium Corporate Package -->
+                <div class="col-lg-4 col-md-6 wow bounceInUp" data-wow-delay="0.3s">
+                    <div class="package-item rounded overflow-hidden">
+                        <div class="text-center p-4">
+                            <h3 class="mb-0">Premium Corporate</h3>
+                            <div class="mb-3">
+                                <small class="fa fa-star text-primary"></small>
+                                <small class="fa fa-star text-primary"></small>
+                                <small class="fa fa-star text-primary"></small>
+                                <small class="fa fa-star text-primary"></small>
+                            </div>
+                            <h1 class="mb-3">
+                                <small class="align-top" style="font-size: 22px; line-height: 45px;">₱</small>45,000<small class="align-bottom" style="font-size: 16px; line-height: 40px;">/ package</small>
+                            </h1>
+                        </div>
+                        <div class="p-4">
+                            <p><i class="fa fa-check text-primary me-2"></i>Enhanced Setup</p>
+                            <p><i class="fa fa-check text-primary me-2"></i>Up to 100 Guests</p>
+                            <p><i class="fa fa-check text-primary me-2"></i>Premium Menu Selection</p>
+                            <p><i class="fa fa-check text-primary me-2"></i>Professional Presentation</p>
+                            <p><i class="fa fa-check text-primary me-2"></i>Full Service Staff</p>
+                            <a class="btn-slide mt-2" href="../book.php"><i class="fa fa-arrow-right"></i><span>Book Now</span></a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Enterprise Package -->
+                <div class="col-lg-4 col-md-6 wow bounceInUp" data-wow-delay="0.5s">
+                    <div class="package-item rounded overflow-hidden">
+                        <div class="text-center p-4">
+                            <h3 class="mb-0">Enterprise Package</h3>
+                            <div class="mb-3">
+                                <small class="fa fa-star text-primary"></small>
+                                <small class="fa fa-star text-primary"></small>
+                                <small class="fa fa-star text-primary"></small>
+                                <small class="fa fa-star text-primary"></small>
+                                <small class="fa fa-star text-primary"></small>
+                            </div>
+                            <h1 class="mb-3">
+                                <small class="align-top" style="font-size: 22px; line-height: 45px;">₱</small>75,000<small class="align-bottom" style="font-size: 16px; line-height: 40px;">/ package</small>
+                            </h1>
+                        </div>
+                        <div class="p-4">
+                            <p><i class="fa fa-check text-primary me-2"></i>Premium Corporate Setup</p>
+                            <p><i class="fa fa-check text-primary me-2"></i>Up to 200 Guests</p>
+                            <p><i class="fa fa-check text-primary me-2"></i>Executive Menu Selection</p>
+                            <p><i class="fa fa-check text-primary me-2"></i>Custom Branding Options</p>
+                            <p><i class="fa fa-check text-primary me-2"></i>VIP Service Staff</p>
+                            <a class="btn-slide mt-2" href="../book.php"><i class="fa fa-arrow-right"></i><span>Book Now</span></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Corporate Event Gallery -->
+    <div class="container-fluid gallery py-6">
+        <div class="container">
+            <div class="text-center wow bounceInUp" data-wow-delay="0.1s">
+                <h1 class="display-5 mb-5">Corporate Event Gallery</h1>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6 wow bounceInUp" data-wow-delay="0.1s">
+                    <div class="gallery-item">
+                        <img class="img-fluid rounded w-100" src="../img/event-3.jpg" alt="">
+                        <div class="gallery-content">
+                            <div class="gallery-info">
+                                <h5 class="text-white text-uppercase mb-2">Conference Setup</h5>
+                                <a href="../img/event-3.jpg" data-lightbox="gallery" class="btn-hover text-white">View Image</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow bounceInUp" data-wow-delay="0.3s">
+                    <div class="gallery-item">
+                        <img class="img-fluid rounded w-100" src="../img/event-4.jpg" alt="">
+                        <div class="gallery-content">
+                            <div class="gallery-info">
+                                <h5 class="text-white text-uppercase mb-2">Business Lunch</h5>
+                                <a href="../img/event-4.jpg" data-lightbox="gallery" class="btn-hover text-white">View Image</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow bounceInUp" data-wow-delay="0.5s">
+                    <div class="gallery-item">
+                        <img class="img-fluid rounded w-100" src="../img/event-5.jpg" alt="">
+                        <div class="gallery-content">
+                            <div class="gallery-info">
+                                <h5 class="text-white text-uppercase mb-2">Corporate Event</h5>
+                                <a href="../img/event-5.jpg" data-lightbox="gallery" class="btn-hover text-white">View Image</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <?php include '../layout/footer.php'; ?>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../lib/wow/wow.min.js"></script>
+    <script src="../lib/easing/easing.min.js"></script>
+    <script src="../lib/waypoints/waypoints.min.js"></script>
+    <script src="../lib/counterup/counterup.min.js"></script>
+    <script src="../lib/lightbox/js/lightbox.min.js"></script>
+    <script src="../lib/owlcarousel/owl.carousel.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="../js/main.js"></script>
+    <script src="../js/theme-switcher.js"></script>
+    <script>
+        new WOW().init();
+    </script>
+</body>
+</html>
