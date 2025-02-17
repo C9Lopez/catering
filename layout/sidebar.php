@@ -34,9 +34,9 @@ function isActive($pages) {
             </a>
         </li>
         <li class="nav-item">
-            <a href="../admin/orders.php" class="nav-link<?= isActive('orders.php') ?>">
+            <a href="../admin/booking.php" class="nav-link<?= isActive('orders.php') ?>">
                 <i class="fas fa-shopping-cart me-2"></i>
-                <span>Orders</span>
+                <span>booking</span>
             </a>
         </li>
         <li class="nav-item">

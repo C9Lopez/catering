@@ -74,8 +74,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <select class="form-select" id="category" name="category" required>
                                 <option value="">Select Package Type</option>
                                 <option value="Wedding Catering">Wedding Catering</option>
+                                <option value="Debut Catering">Debut Catering</option>
                                 <option value="Corporate Catering">Corporate Catering</option>
                                 <option value="Private Catering">Private Catering</option>
+                                <option value="Childrens Party Catering">Childrens Party Catering</option>
                                 <option value="Special Event Catering">Special Event Catering</option>
                             </select>
                         </div>

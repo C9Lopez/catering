@@ -25,9 +25,9 @@
             </a>
         </li>
         <li class="nav-item">
-            <a href="orders.php" class="nav-link">
+            <a href="booking.php" class="nav-link">
                 <i class="fas fa-shopping-cart"></i>
-                <span>Orders</span>
+                <span>Booking</span>
             </a>
         </li>
         <li class="nav-item">

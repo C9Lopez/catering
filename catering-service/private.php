@@ -100,89 +100,62 @@
     <div class="container-fluid py-6 wow fadeInUp" data-wow-delay="0.3s">
         <div class="container">
             <div class="text-center mb-5">
-                <h1 class="display-5">Private Party Packages</h1>
-                <p class="fs-5">Select the perfect package for your intimate gathering</p>
+                <h1 class="display-5">Corporate Packages</h1>
+                <p class="fs-5">Choose the perfect package for your special day</p>
             </div>
             <div class="row g-4">
-                <!-- Intimate Package -->
+                <?php
+                require '../db.php';
+                try {
+                    // Fetch wedding packages from database
+                    $stmt = $db->prepare("SELECT * FROM catering_packages WHERE category = 'Private Catering'");
+                    $stmt->execute();
+                    $packages = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    
+                    foreach ($packages as $package):
+                        // Generate star rating based on package price
+                        $stars = min(5, ceil($package['price'] / 20000));
+                ?>
                 <div class="col-lg-4 col-md-6 wow bounceInUp" data-wow-delay="0.1s">
                     <div class="package-item rounded overflow-hidden">
                         <div class="text-center p-4">
-                            <h3 class="mb-0">Intimate Package</h3>
+                            <h3 class="mb-0"><?php echo htmlspecialchars($package['name']); ?></h3>
                             <div class="mb-3">
-                                <small class="fa fa-star text-primary"></small>
-                                <small class="fa fa-star text-primary"></small>
-                                <small class="fa fa-star text-primary"></small>
+                                <?php for ($i = 0; $i < $stars; $i++): ?>
+                                    <small class="fa fa-star text-primary"></small>
+                                <?php endfor; ?>
                             </div>
                             <h1 class="mb-3">
-                                <small class="align-top" style="font-size: 22px; line-height: 45px;">₱</small>20,000<small class="align-bottom" style="font-size: 16px; line-height: 40px;">/ package</small>
+                                <small class="align-top" style="font-size: 22px; line-height: 45px;">₱</small>
+                                <?php echo number_format($package['price'], 0); ?>
+                                <small class="align-bottom" style="font-size: 16px; line-height: 40px;">/ package</small>
                             </h1>
                         </div>
                         <div class="p-4">
-                            <p><i class="fa fa-check text-primary me-2"></i>Up to 30 Guests</p>
-                            <p><i class="fa fa-check text-primary me-2"></i>4 Main Courses</p>
-                            <p><i class="fa fa-check text-primary me-2"></i>2 Desserts</p>
-                            <p><i class="fa fa-check text-primary me-2"></i>Basic Setup</p>
-                            <p><i class="fa fa-check text-primary me-2"></i>Service Staff</p>
-                            <a class="btn-slide mt-2" href="../book.php"><i class="fa fa-arrow-right"></i><span>Book Now</span></a>
+                            <?php
+                            // Convert description to list items
+                            $features = explode("\n", $package['description']);
+                            foreach ($features as $feature):
+                                if (!empty(trim($feature))):
+                            ?>
+                                <p><i class="fa fa-check text-primary me-2"></i><?php echo htmlspecialchars(trim($feature)); ?></p>
+                            <?php
+                                endif;
+                            endforeach;
+                            ?>
+                            <a class="btn-slide mt-2" href="../book.php?package_id=<?php echo $package['package_id']; ?>">
+                                <i class="fa fa-arrow-right"></i><span>Book Now</span>
+                            </a>
                         </div>
                     </div>
                 </div>
-                <!-- Celebration Package -->
-                <div class="col-lg-4 col-md-6 wow bounceInUp" data-wow-delay="0.3s">
-                    <div class="package-item rounded overflow-hidden">
-                        <div class="text-center p-4">
-                            <h3 class="mb-0">Celebration Package</h3>
-                            <div class="mb-3">
-                                <small class="fa fa-star text-primary"></small>
-                                <small class="fa fa-star text-primary"></small>
-                                <small class="fa fa-star text-primary"></small>
-                                <small class="fa fa-star text-primary"></small>
-                            </div>
-                            <h1 class="mb-3">
-                                <small class="align-top" style="font-size: 22px; line-height: 45px;">₱</small>35,000<small class="align-bottom" style="font-size: 16px; line-height: 40px;">/ package</small>
-                            </h1>
-                        </div>
-                        <div class="p-4">
-                            <p><i class="fa fa-check text-primary me-2"></i>Up to 50 Guests</p>
-                            <p><i class="fa fa-check text-primary me-2"></i>6 Main Courses</p>
-                            <p><i class="fa fa-check text-primary me-2"></i>3 Desserts</p>
-                            <p><i class="fa fa-check text-primary me-2"></i>Enhanced Setup</p>
-                            <p><i class="fa fa-check text-primary me-2"></i>Full Service Staff</p>
-                            <a class="btn-slide mt-2" href="../book.php"><i class="fa fa-arrow-right"></i><span>Book Now</span></a>
-                        </div>
-                    </div>
-                </div>
-                <!-- Grand Celebration Package -->
-                <div class="col-lg-4 col-md-6 wow bounceInUp" data-wow-delay="0.5s">
-                    <div class="package-item rounded overflow-hidden">
-                        <div class="text-center p-4">
-                            <h3 class="mb-0">Grand Celebration</h3>
-                            <div class="mb-3">
-                                <small class="fa fa-star text-primary"></small>
-                                <small class="fa fa-star text-primary"></small>
-                                <small class="fa fa-star text-primary"></small>
-                                <small class="fa fa-star text-primary"></small>
-                                <small class="fa fa-star text-primary"></small>
-                            </div>
-                            <h1 class="mb-3">
-                                <small class="align-top" style="font-size: 22px; line-height: 45px;">₱</small>50,000<small class="align-bottom" style="font-size: 16px; line-height: 40px;">/ package</small>
-                            </h1>
-                        </div>
-                        <div class="p-4">
-                            <p><i class="fa fa-check text-primary me-2"></i>Up to 100 Guests</p>
-                            <p><i class="fa fa-check text-primary me-2"></i>8 Main Courses</p>
-                            <p><i class="fa fa-check text-primary me-2"></i>4 Desserts</p>
-                            <p><i class="fa fa-check text-primary me-2"></i>Premium Setup</p>
-                            <p><i class="fa fa-check text-primary me-2"></i>VIP Service Staff</p>
-                            <a class="btn-slide mt-2" href="../book.php"><i class="fa fa-arrow-right"></i><span>Book Now</span></a>
-                        </div>
-                    </div>
-                </div>
+                <?php endforeach; ?>
+                <?php } catch (PDOException $e) {
+                    echo '<div class="alert alert-danger">Error loading packages: ' . htmlspecialchars($e->getMessage()) . '</div>';
+                } ?>
             </div>
         </div>
     </div>
-
     <!-- Private Party Gallery -->
     <div class="container-fluid gallery py-6">
         <div class="container">
