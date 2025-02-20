@@ -4,12 +4,11 @@ $currentPath = $_SERVER['REQUEST_URI'];
 
 // Check if the user is inside "catering-service" directory
 $isInsideCateringService = strpos($currentPath, '/catering-service/') !== false;
-$isInsideCateringPackages = strpos($currentPath, '/catering-packages/') !== false;
 
 // Define base paths dynamically
-$basePath = $isInsideCateringService || $isInsideCateringPackages ? '../' : './';
-$cateringBase = $isInsideCateringService ? './' : ($isInsideCateringPackages ? '../catering-service/' : './catering-service/');
-$packageBase = $isInsideCateringPackages ? './' : ($isInsideCateringService ? '../catering-packages/' : './catering-packages/');
+$basePath = $isInsideCateringService? '../' : './';
+$cateringBase = $isInsideCateringService ? './' : './catering-service/';
+
 
 function isActive($pages) {
     global $currentPath;
@@ -48,15 +47,7 @@ function isActive($pages) {
                             <a href="<?= $cateringBase  ?>private.php" class="dropdown-item">Private Party Catering
                                 Services</a>
                         </div>
-                    </div>
-                    <div class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle <?= isActive(['basic-package.php', 'standard-package.php', 'premium-package.php']) ?>" data-bs-toggle="dropdown">Catering Packages</a>
-                        <div class="dropdown-menu">
-                            <a href="<?=$packageBase  ?>basic-package.php" class="dropdown-item">Basic Package</a>
-                            <a href="<?=$packageBase  ?>standard-package.php" class="dropdown-item">Standard
-                                Package</a>
-                            <a href="<?=$packageBase  ?>premium-package.php" class="dropdown-item">Premium Package</a>
-                        </div>
+                   
                     </div>
                     <a href="<?= $basePath ?>about.php" class="nav-item nav-link  <?= isActive('about.php') ?>">About Us</a>
                     <a href="<?= $basePath ?>contact.php" class="nav-item nav-link <?= isActive('contact.php') ?>">Contact</a>

@@ -46,7 +46,7 @@
         <div class="container position-relative text-white">
             <h1 class="display-1 mb-4">Debut <span class="text-primary">Catering</span></h1>
             <p class="lead">Make your 18th birthday celebration unforgettable with our exquisite debut catering services.</p>
-            <a href="../book.php" class="btn btn-primary py-3 px-5 rounded-pill wow bounceInLeft" data-wow-delay="0.5s">Book Now</a>
+            
         </div>
     </div>
     <!-- Hero End -->

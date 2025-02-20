@@ -30,6 +30,7 @@
 
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
+    <link href="../css/themes.css" rel="stylesheet">
     
     <style>
         .contact-title {
@@ -183,7 +184,7 @@
         }
     </style>
 </head>
-<body>
+<body class="light-theme">
 
 <!-- Loading Screen -->
 <div id="loading-screen">
@@ -366,6 +367,7 @@
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
+    <script src="../js/theme-switcher.js"></script>
     <script>
         new WOW().init();
     </script>
