@@ -66,12 +66,9 @@ function isActive($pages) {
                 </div>
                 <div class="d-flex align-items-center">
                     <div class="theme-switcher me-3">
-                        <select id="theme-select" class="form-select form-select-sm">
-                            <option value="light-theme">Light Mode</option>
-                            <option value="dark-theme">Dark Mode</option>
-                            <option value="dark-grey-theme">Dark Grey</option>
-                            <option value="dark-blue-theme">Dark Blue</option>
-                        </select>
+                        <button id="theme-toggle" class="btn btn-sm btn-outline-secondary" title="Toggle theme">
+                            <i class="fas fa-moon"></i>
+                        </button>
                     </div>
                     <?php if(isset($_SESSION['user_id'])): ?>
                     <!-- <a href="<?= $basePath ?>auth/logout.php" class="btn btn-outline-danger">Logout</a> -->
