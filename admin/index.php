@@ -109,36 +109,6 @@ try {
                 </div>
             </div>
 
-            <!-- Recent Activity Section -->
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Recent Activity</h5>
-                </div>
-                <div class="card-body">
-                    <div class="list-group">
-                        <?php
-                        try {
-                            $stmt = $db->prepare("SELECT * FROM activity_log ORDER BY created_at DESC LIMIT 5");
-                            $stmt->execute();
-                            $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                            foreach ($activities as $activity): ?>
-                        <div class="list-group-item">
-                            <div class="d-flex justify-content-between">
-                                <div><?php echo htmlspecialchars($activity['description']); ?></div>
-                                <small><?php echo date('M j, Y g:i a', strtotime($activity['created_at'])); ?></small>
-                            </div>
-                        </div>
-                        <?php endforeach;
-                        } catch (PDOException $e) {
-                            echo '<div class="alert alert-warning">Unable to load recent activity</div>';
-                        }
-                        ?>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>

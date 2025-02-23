@@ -20,14 +20,17 @@
     transition: opacity 0.5s ease, visibility 0.5s ease;
 }
 
+
+
 /* Loader Animation */
 .loader {
-    border: 8px solid #f3f3f3;
+    border: 8px solid #ffffff;
     border-top: 8px solid #0055ff; /* Gold color */
+    
     border-radius: 50%;
     width: 60px;
     height: 60px;
-    animation: spin 1s linear infinite;
+    animation: spin 0.001s linear infinite;
 }
 
 /* Keyframes for Loader */

@@ -103,7 +103,8 @@
     <!-- Wedding Packages -->
     <div class="container-fluid py-6 wow fadeInUp" data-wow-delay="0.3s">
         <div class="container">
-            <div class="text-center mb-5">
+<div class="text-center mb-5 wow fadeInUp" data-wow-delay="0.3s">
+
                 <h1 class="display-5">Wedding Packages</h1>
                 <p class="fs-5">Choose the perfect package for your special day</p>
             </div>
@@ -150,7 +151,9 @@
                             endif;
                         endforeach;
                         ?>
-                            <button class="btn-slide mt-2" data-bs-toggle="modal" data-bs-target="#bookingModal"
+<button class="btn-slide mt-2" data-bs-toggle="modal" data-bs-target="#bookingModal" 
+                                style="background-color: #007bff; color: white;"
+
                                 data-package-id="<?php echo $package['package_id']; ?>"
                                 data-package-name="<?php echo htmlspecialchars($package['name']); ?>"
                                 data-price="<?php echo $package['price']; ?>">
@@ -172,7 +175,8 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="bookingModalLabel">Book Your Event</h5>
+<h5 class="modal-title" id="bookingModalLabel">Book Your Special Event</h5>
+
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -205,7 +209,8 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Total Amount (Auto-filled)</label>
+                        <label class="form-label">Estimated Total Amount</label>
+
                             <input type="text" class="form-control" name="total_amount" id="modalTotalAmount"
                                  readonly>
                         </div>
@@ -227,7 +232,8 @@
 
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary">Submit Booking</button>
+<button type="submit" class="btn btn-primary" style="background-color: #28a745;">Confirm Booking</button>
+
                         </div>
                     </form>
                 </div>
@@ -314,7 +320,8 @@
 
                 document.getElementById("modalPackageId").value = packageId;
                 document.getElementById("modalPackageName").value = packageName;
-                document.getElementById("modalTotalAmount").value = price;
+                document.getElementById("modalTotalAmount").value = price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
             });
         });
     </script>

@@ -1,5 +1,15 @@
 <?php
-  session_start();
+require 'db.php'; // Include database connection
+session_start();
+
+// Fetch all live announcements for display
+try {
+    $stmt = $db->prepare("SELECT * FROM announcements WHERE status = 'live'");
+    $stmt->execute();
+    $live_announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo '<div class="alert alert-warning">Unable to load announcements</div>';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -27,7 +37,6 @@
     <!-- Customized Bootstrap Stylesheet -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.css" rel="stylesheet">
 
-
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
     <link href="css/themes.css" rel="stylesheet">
@@ -47,72 +56,51 @@
 
 <?php include 'layout/navbar.php'; ?>
 
-    <div class="container-fluid hero-section py-6 my-6 text-center wow fadeInUp" data-wow-delay="0.3s">
-        <div class="hero-overlay"></div>
-        <div class="container position-relative text-white">
-            <small class="d-inline-block fw-bold text-uppercase bg-light border border-primary rounded-pill px-4 py-1 mb-4 animated bounceInDown text-dark">Welcome to Pochie Catering Services</small>
-            <h1 class="display-1 mb-4">Welcome to <span class="text-primary">Pochie Catering</span></h1>
-            <p class="lead">Providing the best catering services for every occasion.</p>
-            <a href="./about.php" class="btn btn-primary border-0 rounded-pill py-3 px-4 px-md-5 animated bounceInLeft">Know More</a>
-        </div>
+<div class="container-fluid hero-section py-6 my-6 text-center wow fadeInUp" data-wow-delay="0.3s">
+    <div class="hero-overlay"></div>
+    <div class="container position-relative text-white">
+        <small class="d-inline-block fw-bold text-uppercase bg-light border border-primary rounded-pill px-4 py-1 mb-4 animated bounceInDown text-dark">Welcome to Pochie Catering Services</small>
+        <h1 class="display-1 mb-4">Welcome to <span class="text-primary">Pochie Catering</span></h1>
+        <p class="lead">Providing the best catering services for every occasion.</p>
+        <a href="./about.php" class="btn btn-primary border-0 rounded-pill py-3 px-4 px-md-5 animated bounceInLeft">Know More</a>
     </div>
-    <!-- Hero End -->
+</div>
+<!-- Hero End -->
 
-    
-
-   <!-- About Us Section -->
+<!-- Announcement Section Start -->
 <div class="container-fluid py-6 wow fadeInUp" data-wow-delay="0.3s">
     <div class="container">
-        <div class="row g-5 align-items-center">
-            <!-- Left Side: Image -->
-            <div class="col-lg-6 wow zoomIn" data-wow-delay="0.5s">
-                <img src="img/about.jpg" class="img-fluid rounded" alt="Catering Service">
-            </div>
-
-            <!-- Right Side: Content -->
-            <div class="col-lg-6">
-                <h1 class="display-5 mb-4">About Pochie Catering</h1>
-                <p class="mb-4">
-                    At <strong>Pochie Catering</strong>, we specialize in delivering exquisite catering services for all types of events, from 
-                    intimate gatherings to grand celebrations. Our experienced chefs and dedicated team ensure that every dish is made with passion 
-                    and the finest ingredients.
-                </p>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center mb-3">
-                            <i class="fas fa-truck text-primary me-3 fa-2x"></i>
-                            <span>Fresh and Fast Food Delivery</span>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center mb-3">
-                            <i class="fas fa-headset text-primary me-3 fa-2x"></i>
-                            <span>24/7 Customer Support</span>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center mb-3">
-                            <i class="fas fa-cogs text-primary me-3 fa-2x"></i>
-                            <span>Easy Customization Options</span>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center mb-3">
-                            <i class="fas fa-utensils text-primary me-3 fa-2x"></i>
-                            <span>Delicious Deals for Delicious Meals</span>
-                        </div>
+        <h2 class="display-4 mb-5 text-center">Latest Announcements</h2>
+        <div id="announcementCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                <?php foreach ($live_announcements as $index => $announcement): ?>
+                <div class="carousel-item <?php echo $index === 0 ? 'active' : ''; ?>">
+                    <?php 
+                    $imagePath = "admin/" . htmlspecialchars($announcement['media_path']);
+                    ?>
+                    <img src="<?php echo $imagePath; ?>" class="d-block w-100" alt="<?php echo htmlspecialchars($announcement['title']); ?>">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h5><?php echo htmlspecialchars($announcement['title']); ?></h5>
+                        <p><?php echo htmlspecialchars($announcement['description']); ?></p>
                     </div>
                 </div>
-
-                <a href="about.php" class="btn btn-primary py-3 px-5 rounded-pill wow bounceInRight mt-4" data-wow-delay="0.7s">Learn More</a>
+                <?php endforeach; ?>
             </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#announcementCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#announcementCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
         </div>
     </div>
 </div>
+<!-- Announcement Section End -->
 
-  <!-- Our Services Section -->
-<div class="container services-section wow fadeInUp" data-wow-delay="0.3s">
+ <!-- Our Services Section -->
+ <div class="container services-section wow fadeInUp" data-wow-delay="0.3s">
     <h2 class="display-4 mb-5 text-center">Our Catering Services</h2>
     
     <div class="row justify-content-center g-4">
@@ -159,10 +147,9 @@
     </div>
 </div>
 
-    
-   
-    <!-- Menu Start -->
-    <div class="container-fluid menu py-6 my-6">
+
+<!-- Menu Start -->
+<div class="container-fluid menu bg-light py-6 my-6">
             <div class="container">
                 <div class="text-center wow bounceInUp" data-wow-delay="0.1s">
                     <small class="d-inline-block fw-bold text-dark text-uppercase bg-light border border-primary rounded-pill px-4 py-1 mb-3">Our Menu</small>
@@ -703,9 +690,8 @@
         </div>
         <!-- Menu End -->
 
-          
 
-    <!-- Testimonial Start -->
+        <!-- Testimonial Start -->
         <div class="container-fluid py-6">
             <div class="container">
                 <div class="text-center wow bounceInUp" data-wow-delay="0.1s">
@@ -713,7 +699,7 @@
                     <h1 class="display-5 mb-5">What Our Customers says!</h1>
                 </div>
                 <div class="owl-carousel owl-theme testimonial-carousel testimonial-carousel-1 mb-4 wow bounceInUp" data-wow-delay="0.1s">
-                    <div class="testimonial-item rounded">
+                    <div class="testimonial-item rounded bg-light">
                         <div class="d-flex mb-3">
                             <img src="img/testimonial-1.jpg" class="img-fluid rounded-circle flex-shrink-0" alt="">
                             <div class="position-absolute" style="top: 15px; right: 20px;">
@@ -735,7 +721,7 @@
                             <p class="fs-5 m-0 pt-3">Lorem ipsum dolor sit amet elit, sed do eiusmod tempor ut labore et dolore magna aliqua.</p>
                         </div>
                     </div>
-                    <div class="testimonial-item rounded">
+                    <div class="testimonial-item rounded bg-light">
                         <div class="d-flex mb-3">
                             <img src="img/testimonial-2.jpg" class="img-fluid rounded-circle flex-shrink-0" alt="">
                             <div class="position-absolute" style="top: 15px; right: 20px;">
@@ -757,7 +743,7 @@
                             <p class="fs-5 m-0 pt-3">Lorem ipsum dolor sit amet elit, sed do eiusmod tempor ut labore et dolore magna aliqua.</p>
                         </div>
                     </div>
-                    <div class="testimonial-item rounded">
+                    <div class="testimonial-item rounded bg-light">
                         <div class="d-flex mb-3">
                             <img src="img/testimonial-3.jpg" class="img-fluid rounded-circle flex-shrink-0" alt="">
                             <div class="position-absolute" style="top: 15px; right: 20px;">
@@ -779,7 +765,7 @@
                             <p class="fs-5 m-0 pt-3">Lorem ipsum dolor sit amet elit, sed do eiusmod tempor ut labore et dolore magna aliqua.</p>
                         </div>
                     </div>
-                    <div class="testimonial-item rounded">
+                    <div class="testimonial-item rounded bg-light">
                         <div class="d-flex mb-3">
                             <img src="img/testimonial-4.jpg" class="img-fluid rounded-circle flex-shrink-0" alt="">
                             <div class="position-absolute" style="top: 15px; right: 20px;">
@@ -803,7 +789,7 @@
                     </div>
                 </div>
                 <div class="owl-carousel testimonial-carousel testimonial-carousel-2 wow bounceInUp" data-wow-delay="0.3s">
-                <div class="testimonial-item rounded">
+                    <div class="testimonial-item rounded bg-light">
                         <div class="d-flex mb-3">
                             <img src="img/testimonial-1.jpg" class="img-fluid rounded-circle flex-shrink-0" alt="">
                             <div class="position-absolute" style="top: 15px; right: 20px;">
@@ -825,7 +811,7 @@
                             <p class="fs-5 m-0 pt-3">Lorem ipsum dolor sit amet elit, sed do eiusmod tempor ut labore et dolore magna aliqua.</p>
                         </div>
                     </div>
-                    <div class="testimonial-item rounded">
+                    <div class="testimonial-item rounded bg-light">
                         <div class="d-flex mb-3">
                             <img src="img/testimonial-2.jpg" class="img-fluid rounded-circle flex-shrink-0" alt="">
                             <div class="position-absolute" style="top: 15px; right: 20px;">
@@ -847,7 +833,7 @@
                             <p class="fs-5 m-0 pt-3">Lorem ipsum dolor sit amet elit, sed do eiusmod tempor ut labore et dolore magna aliqua.</p>
                         </div>
                     </div>
-                    <div class="testimonial-item rounded">
+                    <div class="testimonial-item rounded bg-light">
                         <div class="d-flex mb-3">
                             <img src="img/testimonial-3.jpg" class="img-fluid rounded-circle flex-shrink-0" alt="">
                             <div class="position-absolute" style="top: 15px; right: 20px;">
@@ -869,7 +855,7 @@
                             <p class="fs-5 m-0 pt-3">Lorem ipsum dolor sit amet elit, sed do eiusmod tempor ut labore et dolore magna aliqua.</p>
                         </div>
                     </div>
-                    <div class="testimonial-item rounded">
+                    <div class="testimonial-item rounded bg-light">
                         <div class="d-flex mb-3">
                             <img src="img/testimonial-4.jpg" class="img-fluid rounded-circle flex-shrink-0" alt="">
                             <div class="position-absolute" style="top: 15px; right: 20px;">
@@ -896,23 +882,21 @@
         </div>
         <!-- Testimonial End -->
 
-    
+<?php include 'layout/footer.php'; ?>
 
-    <?php include 'layout/footer.php'; ?>
-
-    <!-- JavaScript Libraries -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/wow/wow.min.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/waypoints/waypoints.min.js"></script>
-    <script src="lib/counterup/counterup.min.js"></script>
-    <script src="lib/lightbox/js/lightbox.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/theme-switcher.js"></script>
-    <script>
-        new WOW().init();
-    </script>
+<!-- JavaScript Libraries -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="lib/wow/wow.min.js"></script>
+<script src="lib/easing/easing.min.js"></script>
+<script src="lib/waypoints/waypoints.min.js"></script>
+<script src="lib/counterup/counterup.min.js"></script>
+<script src="lib/lightbox/js/lightbox.min.js"></script>
+<script src="lib/owlcarousel/owl.carousel.min.js"></script>
+<script src="js/main.js"></script>
+<script src="js/theme-switcher.js"></script>
+<script>
+    new WOW().init();
+</script>
 </body>
 </html>
