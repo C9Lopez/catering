@@ -63,9 +63,15 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])
     }
 }
 
-// Fetch all announcements for display
+// Fetch announcements based on the filter status
+$status_filter = isset($_GET['status']) ? $_GET['status'] : 'all';
 try {
-    $stmt = $db->prepare("SELECT * FROM announcements");
+    if ($status_filter === 'all') {
+        $stmt = $db->prepare("SELECT * FROM announcements");
+    } else {
+        $stmt = $db->prepare("SELECT * FROM announcements WHERE status = ?");
+        $stmt->execute([$status_filter]);
+    }
     $stmt->execute();
     $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -107,7 +113,14 @@ try {
             <button type="submit" class="btn btn-primary">Post Announcement</button>
         </form>
 
-        <h2 class="mt-5">Preview Only</h2>
+        <h2 class="mt-5">Filter Announcements</h2>
+        <div class="btn-group" role="group" aria-label="Status Filter">
+            <a href="announcement.php?status=all" class="btn btn-info">All</a>
+            <a href="announcement.php?status=preview" class="btn btn-warning">Preview Only</a>
+            <a href="announcement.php?status=live" class="btn btn-success">Live Only</a>
+        </div>
+
+        <h2 class="mt-5"><?php echo ucfirst($status_filter); ?> Announcements</h2>
         <table class="table">
             <thead>
                 <tr>
@@ -118,43 +131,18 @@ try {
             </thead>
             <tbody>
                 <?php foreach ($announcements as $announcement): ?>
-                    <?php if ($announcement['status'] === 'preview'): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($announcement['title']); ?></td>
-                            <td><?php echo htmlspecialchars($announcement['description']); ?></td>
-                            <td>
-<a href="publish_announcement.php?id=<?php echo $announcement['id']; ?>&action=publish" class="btn btn-success">Publish</a>
-
-                                <a href="?action=delete&id=<?php echo $announcement['id']; ?>" class="btn btn-danger">Delete</a>
-                            </td>
-                        </tr>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-
-        <h2 class="mt-5">Live Only</h2>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Description</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($announcements as $announcement): ?>
-                    <?php if ($announcement['status'] === 'live'): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($announcement['title']); ?></td>
-                            <td><?php echo htmlspecialchars($announcement['description']); ?></td>
-                            <td>
-<a href="unpublish_announcement.php?id=<?php echo $announcement['id']; ?>&action=unpublish" class="btn btn-warning">Unpublish</a>
-
-                                <a href="?action=delete&id=<?php echo $announcement['id']; ?>" class="btn btn-danger">Delete</a>
-                            </td>
-                        </tr>
-                    <?php endif; ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($announcement['title']); ?></td>
+                        <td><?php echo htmlspecialchars($announcement['description']); ?></td>
+                        <td>
+                            <?php if ($announcement['status'] === 'preview'): ?>
+                                <a href="publish_announcement.php?id=<?php echo $announcement['id']; ?>&action=publish" class="btn btn-success">Publish</a>
+                            <?php elseif ($announcement['status'] === 'live'): ?>
+                                <a href="unpublish_announcement.php?id=<?php echo $announcement['id']; ?>&action=unpublish" class="btn btn-warning">Unpublish</a>
+                            <?php endif; ?>
+                            <a href="?action=delete&id=<?php echo $announcement['id']; ?>" class="btn btn-danger">Delete</a>
+                        </td>
+                    </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
