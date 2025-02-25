@@ -46,7 +46,7 @@
         <div class="container position-relative text-white">
             <h1 class="display-1 mb-4">Debut <span class="text-primary">Catering</span></h1>
             <p class="lead">Make your 18th birthday celebration unforgettable with our exquisite debut catering services.</p>
-            
+            <a href="./debut_menu.php" class="btn btn-primary border-0 rounded-pill py-2 px-3 px-md-3 animated bounceInLeft">View Menu</a>
         </div>
     </div>
     <!-- Hero End -->

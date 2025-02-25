@@ -53,6 +53,7 @@
         .hero-section {
             background: url('../images/bglux.png') no-repeat center center/cover;
             height: 70vh;
+            
             display: flex;
             align-items: center;
             justify-content: center;
@@ -69,7 +70,7 @@
         }
         .hero-content {
             position: relative;
-            z-index: 1;
+            z-index: 0;
         }
         
         .service-box {
@@ -116,7 +117,7 @@ h4, h5, h6, .h4, .h5, .h6 {
 }
 
 .my-6 {
-    margin-top: 6rem;
+    margin-top: 2rem;
     margin-bottom: 6rem;
 }
 

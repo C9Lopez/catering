@@ -257,3 +257,13 @@ body.dark-theme {
     background-color: var(--dark-primary) !important;
     color: #ffffff !important;
 }
+
+/* Wedding Menu Card Styles */
+.dark-theme .theme-card {
+    background-color: #2d2d2d21;
+    border-color: #444;
+}
+
+.dark-theme .theme-text {
+    color: #ffffff !important;
+}

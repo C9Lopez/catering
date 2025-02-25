@@ -46,7 +46,7 @@
         <div class="container position-relative text-white">
             <h1 class="display-1 mb-4">Corporate <span class="text-primary">Catering</span></h1>
             <p class="lead">Professional catering solutions for your business events and meetings.</p>
-            
+            <a href="./corporate_menu.php" class="btn btn-primary border-0 rounded-pill py-2 px-3 px-md-3 animated bounceInLeft">View Menu</a>
         </div>
     </div>
     <!-- Hero End -->

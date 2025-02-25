@@ -34,15 +34,21 @@ function isActive($pages) {
             </a>
         </li>
         <li class="nav-item">
-            <a href="../admin/announcement.php" class="nav-link<?= isActive('packages.php') ?>">
+            <a href="../admin/announcement.php" class="nav-link<?= isActive('announcement.php') ?>">
                 <i class="fas fa-box"></i>
                 <span>Announcement</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="../admin/booking.php" class="nav-link<?= isActive('orders.php') ?>">
+            <a href="../admin/orders.php" class="nav-link<?= isActive('orders.php') ?>">
                 <i class="fas fa-shopping-cart me-2"></i>
-                <span>booking</span>
+                <span>Orders</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="../admin/menus.php" class="nav-link<?= isActive('menus.php') ?>">
+                <i class="fas fa-shopping-cart me-2"></i>
+                <span>Menus</span>
             </a>
         </li>
         <li class="nav-item">
