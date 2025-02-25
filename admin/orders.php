@@ -38,6 +38,7 @@ if (!isset($_SESSION['admin_id'])) {
                                     <th>Customer</th>
                                     <th>Package</th>
                                     <th>Status</th>
+                                    <th>Chat</th>
                                     <th>Total</th>
                                     <th>Actions</th>
                                 </tr>
@@ -61,6 +62,11 @@ if (!isset($_SESSION['admin_id'])) {
                                                        ($row['status'] === 'completed' ? 'bg-success' : 'bg-danger'); ?>">
                                                 <?php echo ucfirst($row['status']); ?>
                                             </span>
+                                        </td>
+                                        <td>
+                                            <a href="chat.php?order_id=<?php echo $row['order_id']; ?>" class="btn btn-secondary btn-sm">
+                                                <i class="fas fa-comments"></i> Chat
+                                            </a>
                                         </td>
                                         <td>₱<?php echo number_format($row['total_amount'], 2); ?></td>
                                         <td>

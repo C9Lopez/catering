@@ -105,6 +105,7 @@
     <div class="container-fluid py-6 wow fadeInUp" data-wow-delay="0.3s">
         <div class="container">
 <div class="text-center mb-5 wow fadeInUp" data-wow-delay="0.3s">
+    
 
                 <h1 class="display-5">Wedding Packages</h1>
                 <p class="fs-5">Choose the perfect package for your special day</p>
@@ -233,7 +234,8 @@
 
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-<button type="submit" class="btn btn-primary" style="background-color: #28a745;">Confirm Booking</button>
+<button type="submit" class="btn btn-primary" style="background-color: #28a745;" onclick="showConfirmation()">Confirm Booking</button>
+
 
                         </div>
                     </form>
@@ -305,8 +307,12 @@
     <!-- Template Javascript -->
     <script src="../js/main.js"></script>
     <script src="../js/theme-switcher.js"></script>
-    <script>
+<script>
+        function showConfirmation() {
+            alert("Your booking has been successfully submitted!");
+        }
         new WOW().init();
+
 
 
 
