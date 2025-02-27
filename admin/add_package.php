@@ -14,21 +14,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name']);
     $description = trim($_POST['description']);
     $price = trim($_POST['price']);
+    $number_of_guests = trim($_POST['number_of_guests']) ?? null; // New field
 
     // Validate inputs
     $errors = [];
     if (empty($name)) $errors[] = "Package name is required";
     if (empty($description)) $errors[] = "Package description is required";
     if (!is_numeric($price) || $price <= 0) $errors[] = "Invalid price";
+    if (!is_numeric($number_of_guests) || $number_of_guests <= 0) $errors[] = "Number of guests must be a positive number";
 
     if (empty($errors)) {
         try {
-            // Insert new package
-            $stmt = $db->prepare("INSERT INTO catering_packages (category, name, description, price) VALUES (:category, :name, :description, :price)");
+            // Insert new package with number_of_guests
+            $stmt = $db->prepare("INSERT INTO catering_packages (category, name, description, price, number_of_guests) VALUES (:category, :name, :description, :price, :number_of_guests)");
             $stmt->bindParam(':category', $category);
             $stmt->bindParam(':name', $name);
             $stmt->bindParam(':description', $description);
             $stmt->bindParam(':price', $price);
+            $stmt->bindParam(':number_of_guests', $number_of_guests, PDO::PARAM_INT);
             $stmt->execute();
 
             $_SESSION['success'] = "Package added successfully";
@@ -93,6 +96,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="mb-3">
                             <label for="price" class="form-label">Price</label>
                             <input type="number" class="form-control" id="price" name="price" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="number_of_guests" class="form-label">Number of Guests</label>
+                            <input type="number" class="form-control" id="number_of_guests" name="number_of_guests" min="1" required>
+                            <small class="form-text text-muted">Set the fixed number of guests for this package</small>
                         </div>
                         <button type="submit" class="btn btn-primary">Add Package</button>
                         <a href="packages.php" class="btn btn-secondary">Cancel</a>

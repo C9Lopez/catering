@@ -30,7 +30,7 @@ try {
     // $stmt->execute();
     // $totalRevenue = $stmt->fetchColumn() ?? 0;
     $activeOrders = 1;
-    $totalRevenue =1;
+    
 } catch (PDOException $e) {
     $errorMsg = "Error fetching dashboard data: " . $e->getMessage();
 }
@@ -95,19 +95,7 @@ try {
                         </a>
                     </div>
                 </div>
-                <div class="col-md-3 mb-4">
-                    <div class="dashboard-card p-3 h-100">
-                        <div class="d-flex align-items-center mb-3">
-                            <i class="fas fa-chart-line fa-2x me-3"></i>
-                            <h5 class="mb-0">Revenue</h5>
-                        </div>
-                        <p class="display-4 mb-3">₱<?php echo number_format($totalRevenue, 2); ?></p>
-                        <a href="reports.php" class="btn btn-primary btn-block">
-                            <i class="fas fa-file-alt me-2"></i>View Reports
-                        </a>
-                    </div>
-                </div>
-            </div>
+                
 
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

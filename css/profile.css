@@ -1,0 +1,144 @@
+.profile-section {
+            padding: 120px 0 60px;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .light-theme .profile-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--light-border);
+        }
+
+        .dark-theme .profile-card {
+            background: var(--dark-card);
+            border: 1px solid var(--dark-border);
+        }
+
+        .dark-grey-theme .profile-card {
+            background: var(--dark-grey-card);
+            border: 1px solid var(--dark-grey-border);
+        }
+
+        .dark-blue-theme .profile-card {
+            background: var(--dark-blue-card);
+            border: 1px solid var(--dark-blue-border);
+        }
+
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            padding: 5px;
+            margin: 0 auto 2rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .light-theme .profile-image {
+            border: 3px solid var(--light-primary);
+            background: linear-gradient(45deg, var(--light-primary), #e91e63);
+        }
+
+        .dark-theme .profile-image {
+            border: 3px solid var(--dark-primary);
+            background: linear-gradient(45deg, var(--dark-primary), #e91e63);
+        }
+
+        .dark-grey-theme .profile-image {
+            border: 3px solid var(--dark-grey-primary);
+            background: linear-gradient(45deg, var(--dark-grey-primary), #e91e63);
+        }
+
+        .dark-blue-theme .profile-image {
+            border: 3px solid var(--dark-blue-primary);
+            background: linear-gradient(45deg, var(--dark-blue-primary), #e91e63);
+        }
+
+        .profile-image img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .profile-details {
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .light-theme .profile-details {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .dark-theme .profile-details {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .dark-grey-theme .profile-details {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .dark-blue-theme .profile-details {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .profile-detail-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .profile-detail-item i {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: white;
+        }
+
+        .light-theme .profile-detail-item i {
+            background: var(--light-primary);
+        }
+
+        .dark-theme .profile-detail-item i {
+            background: var(--dark-primary);
+        }
+
+        .dark-grey-theme .profile-detail-item i {
+            background: var(--dark-grey-primary);
+        }
+
+        .dark-blue-theme .profile-detail-item i {
+            background: var(--dark-blue-primary);
+        }
+
+        .logout-btn {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            border: none;
+            border-radius: 50px;
+            padding: 0.8rem 2rem;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 65, 108, 0.4);
+            color: white;
+        }
