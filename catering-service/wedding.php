@@ -4,7 +4,7 @@ require '../db.php'; // Include database connection
 
 // Fetch existing bookings for the calendar
 try {
-    $stmt = $db->prepare("SELECT event_date FROM event_bookings WHERE booking_status = 'pending' OR booking_status = 'confirmed'");
+    $stmt = $db->prepare("SELECT event_date FROM event_bookings WHERE booking_status = 'Approved'");
     $stmt->execute();
     $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $occupiedDates = array_column($bookings, 'event_date'); // Extract dates into an array
