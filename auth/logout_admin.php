@@ -1,8 +1,8 @@
 <?php
 session_start();
+require '../db.php'; // Adjust the path if necessary
 
-// Log the logout activity
-require '../db.php';
+// Log the admin logout activity
 try {
     $stmt = $db->prepare("INSERT INTO activity_log (admin_id, description) VALUES (:admin_id, :description)");
     $stmt->execute([
@@ -13,11 +13,11 @@ try {
     // Continue with logout even if logging fails
 }
 
-// Destroy all session data
+// Destroy all admin session data
 $_SESSION = array();
 session_destroy();
 
-// Redirect to login page
-header("Location: admin_login.php");
+// Redirect to the admin login page (adjust the path if needed)
+header("Location: ../auth/admin_login.php");
 exit();
 ?>

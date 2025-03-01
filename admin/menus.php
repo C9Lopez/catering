@@ -8,8 +8,6 @@ if (!isset($_SESSION['admin_id'])) {
     exit();
 }
 
-
-
 // Handle form submission for posting menus
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $service_type = $_POST['service_type'];
@@ -49,20 +47,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Handle delete action
+// Handle delete action with confirmation
 if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
     $id = $_GET['id'];
 
-    // Prepare the delete statement
     try {
         $stmt = $db->prepare("DELETE FROM menus WHERE id = ?");
         $stmt->execute([$id]);
-
-        // After deletion, redirect back to menus page
+        $_SESSION['success'] = "Menu item deleted successfully";
         header("Location: menus.php");
         exit();
     } catch (PDOException $e) {
-        echo "Error: " . $e->getMessage();
+        $_SESSION['error'] = "Error deleting menu item: " . $e->getMessage();
+        header("Location: menus.php");
+        exit();
     }
 }
 
@@ -97,10 +95,19 @@ try {
     $stmt->execute($params);
     $menus = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    echo '<div class="alert alert-warning">Unable to load menus</div>';
+    $_SESSION['error'] = "Unable to load menus: " . $e->getMessage();
+}
+
+// Display session messages
+if (isset($_SESSION['success'])) {
+    echo "<script>alert('" . htmlspecialchars($_SESSION['success']) . "');</script>";
+    unset($_SESSION['success']);
+}
+if (isset($_SESSION['error'])) {
+    echo "<script>alert('" . htmlspecialchars($_SESSION['error']) . "');</script>";
+    unset($_SESSION['error']);
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -110,6 +117,51 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/admin.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            padding: 0;
+            font-size: 1rem;
+        }
+        .delete-btn:hover {
+            text-decoration: underline;
+        }
+        .confirm-delete {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        .confirm-delete button {
+            margin: 0 5px;
+            padding: 8px 16px;
+            border-radius: 4px;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        @media (max-width: 768px) {
+            .confirm-delete {
+                width: 80%;
+            }
+        }
+    </style>
 </head>
 <body>
 <?php include '../layout/sidebar.php'; ?>
@@ -197,7 +249,9 @@ try {
                             <td><?php echo htmlspecialchars($menu['title']); ?></td>
                             <td><?php echo htmlspecialchars($menu['description']); ?></td>
                             <td>
-                                <a href="?action=delete&id=<?php echo $menu['id']; ?>" class="btn btn-danger">Delete</a>
+                                <button class="delete-btn" onclick="showConfirmDelete(<?php echo $menu['id']; ?>)">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -206,9 +260,38 @@ try {
         </div>
     </div>
 
+    <!-- Confirmation Dialog -->
+    <div class="overlay" id="overlay"></div>
+    <div class="confirm-delete" id="confirmDelete">
+        <p>Are you sure you want to delete this menu item?</p>
+        <button class="btn btn-danger" onclick="confirmDelete()">OK</button>
+        <button class="btn btn-secondary" onclick="cancelDelete()">Cancel</button>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        let menuIdToDelete = null;
+
+        function showConfirmDelete(id) {
+            menuIdToDelete = id;
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('confirmDelete').style.display = 'block';
+        }
+
+        function confirmDelete() {
+            if (menuIdToDelete) {
+                window.location.href = `menus.php?action=delete&id=${menuIdToDelete}`;
+            }
+            cancelDelete();
+        }
+
+        function cancelDelete() {
+            menuIdToDelete = null;
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('confirmDelete').style.display = 'none';
+        }
+
         function applyFilters() {
             const serviceType = document.getElementById('service_type_filter').value;
             const category = document.getElementById('category_filter').value;

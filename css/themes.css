@@ -176,6 +176,77 @@ body.dark-theme {
     border-color: var(--dark-primary) !important;
 }
 
+
+
+
+/* theme.css (update or add these styles, replacing or extending the existing .card styles) */
+
+/* Announcement Card Styles */
+.card {
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.light-theme .card {
+    background: var(--light-bg);
+    color: var(--light-text);
+    border: 1px solid var(--light-border);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dark-theme .card {
+    background: #2d2d2d21; /* Semi-transparent dark gray (13% opacity) as shown in the second image */
+    color: #ffffff; /* White text for dark mode */
+    border: 1px solid var(--dark-border);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.light-theme .card-img-top {
+    filter: brightness(100%);
+}
+
+.dark-theme .card-img-top {
+    filter: brightness(70%); /* Slightly darken images in dark mode for contrast */
+}
+
+.light-theme .card-title, .light-theme .card-text, .light-theme .btn-primary {
+    color: var(--light-text);
+}
+
+.dark-theme .card-title, .dark-theme .card-text, .dark-theme .btn-primary {
+    color: #ffffff; /* White text for dark mode */
+}
+
+.light-theme .btn-primary {
+    background-color: var(--light-primary);
+    border-color: var(--light-primary);
+    color: var(--light-bg); /* Ensure text is readable on light background */
+}
+
+.dark-theme .btn-primary {
+    background-color: var(--dark-primary);
+    border-color: var(--dark-primary);
+    color: #ffffff; /* White text for dark mode on blue button */
+}
+
+.light-theme .btn-primary:hover {
+    background-color: #0056b3; /* Darker shade of light-primary */
+    border-color: #0056b3;
+    color: var(--light-bg);
+}
+
+.dark-theme .btn-primary:hover {
+    background-color: #2a6fd6; /* Darker shade of dark-primary */
+    border-color: #2a6fd6;
+    color: #ffffff;
+}
+
+
+
+
+
+
+
+
 /* Menu Button Styles */
 .light-theme .rounded-pill {
     background-color: #ffffff !important;

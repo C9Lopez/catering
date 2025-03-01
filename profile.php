@@ -118,7 +118,7 @@ try {
                         </div>
 
                         <div class="logout-container text-center mt-4">
-                            <a href="./auth/logout.php" class="btn btn-danger logout-btn">
+                            <a href="./auth/logout_user.php" class="btn btn-danger logout-btn">
                                 <i class="fas fa-sign-out-alt me-2"></i> Logout
                             </a>
                         </div>

@@ -5,6 +5,9 @@ function toggleTheme() {
     const newTheme = isDark ? 'light-theme' : 'dark-theme';
     document.body.classList.add(newTheme);
     localStorage.setItem('theme', newTheme);
+
+    // Re-render announcements to apply new theme styles
+    loadAnnouncements(currentPage); // Reload current page to update card styles
 }
 
 // Initialize theme
@@ -12,6 +15,7 @@ function initializeTheme() {
     const savedTheme = localStorage.getItem('theme') || 'light-theme';
     document.body.classList.remove('light-theme', 'dark-theme');
     document.body.classList.add(savedTheme);
+    loadAnnouncements(currentPage); // Load announcements with the initial theme
 }
 
 // Add event listener for theme toggle
@@ -21,6 +25,6 @@ document.addEventListener('DOMContentLoaded', function() {
         themeToggle.addEventListener('click', toggleTheme);
     }
     
-    // Initialize theme
+    // Initialize theme and load announcements
     initializeTheme();
 });

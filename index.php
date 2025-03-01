@@ -2,13 +2,25 @@
 require 'db.php'; // Include database connection
 session_start();
 
-// Fetch all live announcements for display
+// Fetch all live announcements for AJAX (store in JSON for client-side use)
 try {
-    $stmt = $db->prepare("SELECT * FROM announcements WHERE status = 'live'");
+    $stmt = $db->prepare("SELECT * FROM announcements WHERE status = 'live' ORDER BY created_at DESC");
     $stmt->execute();
     $live_announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $announcements_json = json_encode($live_announcements);
+    
+    // Calculate pagination variables in PHP for JavaScript
+    $itemsPerPage = 4;
+    $totalAnnouncements = count($live_announcements);
+    $totalPages = ceil($totalAnnouncements / $itemsPerPage);
+    // Get current page from URL, default to 1
+    $currentPage = isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 && $_GET['page'] <= $totalPages ? (int)$_GET['page'] : 1;
 } catch (PDOException $e) {
     echo '<div class="alert alert-warning">Unable to load announcements</div>';
+    $announcements_json = json_encode([]);
+    $totalAnnouncements = 0;
+    $totalPages = 0;
+    $currentPage = 1;
 }
 ?>
 <!DOCTYPE html>
@@ -40,12 +52,9 @@ try {
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
     <link href="css/themes.css" rel="stylesheet">
+    <link href="css/ann_button.css" rel="stylesheet">
     
-    <style>
-        .nav-item.dropdown:hover .dropdown-menu {
-            display: block;
-        }
-    </style>
+    
 </head>
 <body class="light-theme">
 
@@ -56,6 +65,7 @@ try {
 
 <?php include 'layout/navbar.php'; ?>
 
+<!-- Hero Section -->
 <div class="container-fluid hero-section py-6 my-6 text-center wow fadeInUp" data-wow-delay="0.3s">
     <div class="hero-overlay"></div>
     <div class="container position-relative text-white">
@@ -65,44 +75,11 @@ try {
         <a href="./about.php" class="btn btn-primary border-0 rounded-pill py-2 px-3 px-md-3 animated bounceInLeft">Know More</a>
     </div>
 </div>
-<!-- Hero End -->
+<!-- End Hero Section -->
 
-<!-- Announcement Section Start -->
-<div class="container-fluid py-6 wow fadeInUp" data-wow-delay="0.3s">
-    <div class="container">
-        <h2 class="display-4 mb-5 text-center">Latest Announcements</h2>
-        <div id="announcementCarousel" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                <?php foreach ($live_announcements as $index => $announcement): ?>
-                <div class="carousel-item <?php echo $index === 0 ? 'active' : ''; ?>">
-                    <?php 
-                    $imagePath = "admin/" . htmlspecialchars($announcement['media_path']);
-                    ?>
-                    <img src="<?php echo $imagePath; ?>" class="d-block w-100" alt="<?php echo htmlspecialchars($announcement['title']); ?>">
-                    <div class="carousel-caption d-none d-md-block">
-                        <h5><?php echo htmlspecialchars($announcement['title']); ?></h5>
-                        <p><?php echo htmlspecialchars($announcement['description']); ?></p>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#announcementCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#announcementCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
-        </div>
-    </div>
-</div>
-<!-- Announcement Section End -->
-
- <!-- Our Services Section -->
- <div class="container services-section wow fadeInUp" data-wow-delay="0.3s">
+<!-- Our Services Section -->
+<div class="container services-section wow fadeInUp" data-wow-delay="0.3s">
     <h2 class="display-4 mb-5 text-center">Our Catering Services</h2>
-    
     <div class="row justify-content-center g-4">
         <!-- Top Row (3 Services) -->
         <div class="col-lg-4 col-md-6">
@@ -127,7 +104,6 @@ try {
             </div>
         </div>
     </div>
-
     <!-- Centered Bottom Row (2 Services) -->
     <div class="row justify-content-center g-4 mt-3">
         <div class="col-lg-4 col-md-6">
@@ -146,13 +122,34 @@ try {
         </div>
     </div>
 </div>
+<!-- End Our Services Section -->
 
+<!-- Announcement Section Start -->
+<div class="container-fluid py-6 wow fadeInUp" data-wow-delay="0.3s">
+    <div class="container">
+        <h2 class="display-4 mb-5 text-center">Latest Announcements</h2>
+        <!-- Announcement Cards Container -->
+        <div class="announcement-container" id="announcementContainer">
+            <div class="row">
+                <!-- Announcements will be loaded here via AJAX -->
+            </div>
+        </div>
+        <!-- Loading Indicator -->
+        <div class="loading" id="loadingIndicator">
+            <span>Loading...</span>
+        </div>
+        <!-- Pagination Buttons -->
+        <div class="pagination-buttons">
+            <button id="backButton" <?php echo $currentPage == 1 ? 'disabled' : ''; ?>>Back</button>
+            <span id="pageInfo">Page <?php echo $currentPage; ?> of <?php echo $totalPages; ?></span>
+            <button id="nextButton" <?php echo $currentPage >= $totalPages ? 'disabled' : ''; ?>>Next</button>
+        </div>
+    </div>
+</div>
+<!-- Announcement Section End -->
 
-
-
-
-        <!-- Testimonial Start -->
-        <div class="container-fluid py-6">
+ <!-- Testimonial Start -->
+ <div class="container-fluid py-6">
             <div class="container">
                 <div class="text-center wow bounceInUp" data-wow-delay="0.1s">
                     <small class="d-inline-block fw-bold text-dark text-uppercase bg-light border border-primary rounded-pill px-4 py-1 mb-3">Testimonial</small>
@@ -357,6 +354,65 @@ try {
 <script src="js/theme-switcher.js"></script>
 <script>
     new WOW().init();
+
+    // Load initial announcements (default to page 1)
+    let currentPage = <?php echo $currentPage; ?>;
+    const itemsPerPage = 4;
+    const totalAnnouncements = <?php echo $totalAnnouncements; ?>;
+    const totalPages = <?php echo $totalPages; ?>;
+    const announcements = <?php echo $announcements_json; ?>;
+
+    // Function to load announcements based on current page
+    function loadAnnouncements(page) {
+        if (page < 1) page = 1; // Prevent going below page 1
+        if (page > totalPages) page = totalPages; // Prevent going beyond total pages
+
+        currentPage = page;
+        $('#backButton').prop('disabled', currentPage === 1);
+        $('#nextButton').prop('disabled', currentPage === totalPages);
+        $('#loadingIndicator').show();
+        $('#announcementContainer .row').empty();
+
+        const start = (page - 1) * itemsPerPage;
+        const end = Math.min(start + itemsPerPage, totalAnnouncements);
+        const pageAnnouncements = announcements.slice(start, end);
+
+        pageAnnouncements.forEach(announcement => {
+            // Inilalagay natin ang "glass-card" kasama ng "card" para masunod ang theme.css
+            const card = `
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card glass-card">
+                        <img src="admin/${announcement.media_path}" class="card-img-top" alt="${announcement.title}">
+                        <div class="card-body">
+                            <h5 class="card-title">${announcement.title}</h5>
+                            <p class="card-text">${announcement.description}</p>
+                            <a href="announcement-detail.php?id=${announcement.id}" class="btn btn-primary">Read More</a>
+                        </div>
+                    </div>
+                </div>`;
+            $('#announcementContainer .row').append(card);
+        });
+
+        // Update page info and hide loading indicator
+        $('#pageInfo').text(`Page ${currentPage} of ${totalPages}`);
+        $('#loadingIndicator').hide();
+    }
+
+    // Event listeners for pagination buttons
+    $('#backButton').on('click', function() {
+        if (!$(this).prop('disabled') && currentPage > 1) {
+            loadAnnouncements(currentPage - 1);
+        }
+    });
+
+    $('#nextButton').on('click', function() {
+        if (!$(this).prop('disabled') && currentPage < totalPages) {
+            loadAnnouncements(currentPage + 1);
+        }
+    });
+
+    // Initial load
+    loadAnnouncements(currentPage);
 </script>
 </body>
 </html>
