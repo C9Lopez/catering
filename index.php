@@ -42,7 +42,7 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- Libraries Stylesheet -->
-    <link href="lib/animate/animate.min.css" rel="stylesheet">
+    <!-- <link href="lib/animate/animate.min.css" rel="stylesheet">   REMOVED CAUSE WE HAD TO!  JUST REMOVE COMMENT IF YOU WANT TO HAVE ANIMATIONS--> 
     <link href="lib/lightbox/css/lightbox.min.css" rel="stylesheet">
     <link href="lib/owlcarousel/owl.carousel.min.css" rel="stylesheet">
 
