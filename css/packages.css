@@ -1,0 +1,234 @@
+/* Dark Mode Default (can be toggled via theme switcher) */
+body.light-theme .container-fluid {
+    background-color: #f5f7fa;
+}
+
+body:not(.light-theme) .container-fluid {
+    background-color: #1a1a1a;
+}
+
+#packages-container {
+    justify-content: center; /* Center cards horizontally */
+}
+
+.package-card {
+    border: none;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    border-radius: 17px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    margin-bottom: 3rem;
+    width: 500px; /* Increased width for larger cards */
+}
+
+body.light-theme .package-card {
+    background-color: #ffffff;
+}
+
+body:not(.light-theme) .package-card {
+    background-color: #2d2d2d;
+}
+
+
+
+.package-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+
+.package-header {
+    font-family: 'Playball', cursive;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    border-radius: 10px 10px 0 0;
+}
+
+.package-header h3 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.package-body {
+    padding: 3rem;
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+body.light-theme .package-body {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e9ecef;
+    color: #495057;
+}
+
+body:not(.light-theme) .package-body {
+    background-color: #2d2d2d;
+    border-bottom: 1px solid #3a3a3a;
+    color: #d1d1d1;
+}
+
+/* Style for scrollbar */
+.package-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.package-body::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+}
+
+.package-body::-webkit-scrollbar-thumb {
+    background: #e74c3c;
+    border-radius: 10px;
+}
+
+.package-body::-webkit-scrollbar-thumb:hover {
+    background: #c0392b;
+}
+
+.package-body ul li {
+    font-size: 1rem;
+    line-height: 1.6;
+    padding-left: 0.5rem;
+}
+
+.package-body .fa-check-circle {
+    font-size: 1.1rem;
+}
+
+.pricing-card-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+body.light-theme .pricing-card-title {
+    color: #333;
+}
+
+body:not(.light-theme) .pricing-card-title {
+    color: #ffffff;
+}
+
+.guests-count {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+body.light-theme .guests-count {
+    color: #495057;
+}
+
+body:not(.light-theme) .guests-count {
+    color: #d1d1d1;
+}
+
+.package-body .text-muted {
+    color: #6c757d;
+}
+
+.package-footer {
+    border-radius: 0 0 10px 10px;
+}
+
+body.light-theme .package-footer {
+    background-color: #ffffff;
+}
+
+body:not(.light-theme) .package-footer {
+    background-color: #2d2d2d;
+}
+
+.btn-primary {
+    background: #ffffff;
+    color: #000000;
+    border: none;
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    transition: background 0.3s ease, transform 0.3s ease, color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: #e74c3c;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.text-primary {
+    color: #e74c3c !important;
+}
+
+.text-title {
+    color: #333 !important;
+}
+
+body.light-theme .text-title {
+    color: #333 !important;
+}
+
+body:not(.light-theme) .text-title {
+    color: #ffffff !important;
+}
+
+.text-subtitle {
+    color: #6c757d !important;
+}
+
+body.light-theme .text-subtitle {
+    color: #6c757d !important;
+}
+
+body:not(.light-theme) .text-subtitle {
+    color: #6c757d !important;
+}
+
+.text-content {
+    color: #495057 !important;
+}
+
+body.light-theme .text-content {
+    color: #495057 !important;
+}
+
+body:not(.light-theme) .text-content {
+    color: #d1d1d1 !important;
+}
+
+.text-dark {
+    color: #333 !important;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+.text-success {
+    color: #28a745 !important;
+}
+
+.font-wedding {
+    font-family: 'Playball', cursive;
+    font-size: 1.75rem;
+    font-weight: 600;
+}
+
+.display-4 {
+    font-size: 3rem;
+}
+
+/* Pagination Button Styles */
+.btn-outline-light {
+    border-color: #ffffff;
+    color: #ffffff;
+}
+
+body.light-theme .btn-outline-light {
+    border-color: #333;
+    color: #333;
+}
+
+.btn-outline-light:hover {
+    background-color: #e74c3c;
+    border-color: #e74c3c;
+    color: #ffffff;
+}

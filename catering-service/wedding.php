@@ -1,21 +1,43 @@
 <?php
 session_start();
-require '../db.php'; // Include database connection
+require '../db.php';
 
-// Fetch existing bookings for the calendar
+// Kunin ang mga "occupied" dates para sa calendar
 try {
     $stmt = $db->prepare("SELECT event_date FROM event_bookings WHERE booking_status = 'Approved'");
     $stmt->execute();
     $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $occupiedDates = array_column($bookings, 'event_date'); // Extract dates into an array
+    $occupiedDates = array_column($bookings, 'event_date');
 } catch (PDOException $e) {
-    $occupiedDates = []; // Default to empty array if query fails
+    $occupiedDates = [];
+}
+
+// Kunin ang lahat ng wedding packages para sa client-side pagination
+try {
+    $stmt = $db->prepare("SELECT * FROM catering_packages WHERE category = 'Wedding Catering'");
+    $stmt->execute();
+    $wedding_packages = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $packages_json = json_encode($wedding_packages);
+    
+    // Itakda ang bilang ng packages kada page (2 na cards per page)
+    $itemsPerPage = 2;
+    $totalPackages = count($wedding_packages);
+    $totalPages = ceil($totalPackages / $itemsPerPage);
+    
+    // Kunin ang kasalukuyang page mula sa URL; default sa 1
+    $currentPage = isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 && $_GET['page'] <= $totalPages 
+                   ? (int)$_GET['page'] 
+                   : 1;
+} catch (PDOException $e) {
+    echo '<div class="alert alert-danger">Error loading packages: ' . htmlspecialchars($e->getMessage()) . '</div>';
+    $packages_json = json_encode([]);
+    $totalPackages = 0;
+    $totalPages = 0;
+    $currentPage = 1;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Wedding Catering - Pochie Catering</title>
@@ -33,7 +55,6 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- Libraries Stylesheet -->
-    <!-- <link href="../lib/animate/animate.min.css" rel="stylesheet"> -->
     <link href="../lib/lightbox/css/lightbox.min.css" rel="stylesheet">
     <link href="../lib/owlcarousel/owl.carousel.min.css" rel="stylesheet">
     <!-- FullCalendar CSS -->
@@ -46,9 +67,9 @@ try {
     <link href="../css/style.css" rel="stylesheet">
     <link href="../css/themes.css" rel="stylesheet">
     <link href="../css/calendar.css" rel="stylesheet">
-    <link href="../css/booking.css" rel="stylesheet"> <!-- Added for consistency -->
+    <link href="../css/packages.css" rel="stylesheet">
+    <link href="../css/booking.css" rel="stylesheet">
 </head>
-
 <body class="light-theme">
 
     <!-- Loading Screen -->
@@ -79,10 +100,26 @@ try {
                         Our wedding catering service is designed to provide an unforgettable culinary experience for you and your guests.
                     </p>
                     <div class="row g-4">
-                        <div class="col-md-6"><div class="d-flex align-items-center mb-3"><i class="fas fa-check text-primary me-3"></i><span>Customized Menu Planning</span></div></div>
-                        <div class="col-md-6"><div class="d-flex align-items-center mb-3"><i class="fas fa-check text-primary me-3"></i><span>Professional Service Staff</span></div></div>
-                        <div class="col-md-6"><div class="d-flex align-items-center mb-3"><i class="fas fa-check text-primary me-3"></i><span>Elegant Table Settings</span></div></div>
-                        <div class="col-md-6"><div class="d-flex align-items-center mb-3"><i class="fas fa-check text-primary me-3"></i><span>Flexible Packages</span></div></div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check text-primary me-3"></i><span>Customized Menu Planning</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check text-primary me-3"></i><span>Professional Service Staff</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check text-primary me-3"></i><span>Elegant Table Settings</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check text-primary me-3"></i><span>Flexible Packages</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="col-lg-6 wow zoomIn" data-wow-delay="0.5s">
@@ -92,60 +129,26 @@ try {
         </div>
     </div>
 
-    <!-- Wedding Packages -->
+    <!-- Wedding Packages Section with Client-side Pagination -->
     <div class="container-fluid py-6 wow fadeInUp" data-wow-delay="0.3s">
         <div class="container">
             <div class="text-center mb-5 wow fadeInUp" data-wow-delay="0.3s">
-                <h1 class="display-5">Wedding Packages</h1>
-                <p class="fs-5">Choose the perfect package for your special day</p>
+                <h1 class="display-4 text-title fw-bold">Wedding Packages</h1>
+                <p class="fs-5 text-subtitle">Choose the perfect package for your special day</p>
             </div>
-            <div class="row g-4">
-                <?php
-                try {
-                    $stmt = $db->prepare("SELECT * FROM catering_packages WHERE category = 'Wedding Catering'");
-                    $stmt->execute();
-                    $packages = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    foreach ($packages as $package):
-                        $stars = min(5, ceil($package['price'] / 20000));
-                ?>
-                <div class="col-lg-4 col-md-6 wow bounceInUp" data-wow-delay="0.1s">
-                    <div class="package-item rounded overflow-hidden">
-                        <div class="text-center p-4">
-                            <h3 class="mb-0"><?php echo htmlspecialchars($package['name']); ?></h3>
-                            <div class="mb-3">
-                                <?php for ($i = 0; $i < $stars; $i++): ?>
-                                <small class="fa fa-star text-primary"></small>
-                                <?php endfor; ?>
-                            </div>
-                            <h1 class="mb-3">
-                                <small class="align-top" style="font-size: 22px; line-height: 45px;">₱</small>
-                                <?php echo number_format($package['price'], 0); ?>
-                                <small class="align-bottom" style="font-size: 16px; line-height: 40px;">/ package</small>
-                            </h1>
-                        </div>
-                        <div class="p-4">
-                            <?php
-                            $features = explode("\n", $package['description']);
-                            foreach ($features as $feature):
-                                if (!empty(trim($feature))):
-                            ?>
-                            <p><i class="fa fa-check text-primary me-2"></i><?php echo htmlspecialchars(trim($feature)); ?></p>
-                            <?php endif; endforeach; ?>
-                            <button class="btn-slide mt-2" data-bs-toggle="modal" data-bs-target="#bookingModal"
-                                style="background-color: #007bff; color: white;"
-                                data-package-id="<?php echo $package['package_id']; ?>"
-                                data-package-name="<?php echo htmlspecialchars($package['name']); ?>"
-                                data-price="<?php echo $package['price']; ?>"
-                                data-number-of-guests="<?php echo $package['number_of_guests']; ?>">
-                                <i class="fa fa-arrow-right"></i><span>Book Now</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-                <?php } catch (PDOException $e) {
-                    echo '<div class="alert alert-danger">Error loading packages: ' . htmlspecialchars($e->getMessage()) . '</div>';
-                } ?>
+            <!-- Packages Container (lalagyan ng JS) -->
+            <div id="packagesContainer" class="row g-4 justify-content-center">
+                <!-- Wedding packages ay iloload dito ng JavaScript -->
+            </div>
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="text-center my-3" style="display: none;">
+                <span>Loading...</span>
+            </div>
+            <!-- Pagination Buttons -->
+            <div class="pagination-buttons text-center mt-5">
+                <button id="backButton" <?php echo $currentPage == 1 ? 'disabled' : ''; ?>>Back</button>
+                <span id="pageInfo">Page <?php echo $currentPage; ?> of <?php echo $totalPages; ?></span>
+                <button id="nextButton" <?php echo $currentPage >= $totalPages ? 'disabled' : ''; ?>>Next</button>
             </div>
         </div>
     </div>
@@ -278,11 +281,12 @@ try {
     <script>
         new WOW().init();
 
+        // ---------------------------
+        // Booking Modal & Calendar Setup
+        // ---------------------------
         document.addEventListener("DOMContentLoaded", function () {
             let bookingModal = document.getElementById("bookingModal");
             let calendarInitialized = false;
-
-            // Pass occupied dates from PHP to JavaScript
             const occupiedDates = <?php echo json_encode($occupiedDates); ?>;
 
             bookingModal.addEventListener("shown.bs.modal", function (event) {
@@ -290,27 +294,25 @@ try {
                 let packageId = button.getAttribute("data-package-id");
                 let packageName = button.getAttribute("data-package-name");
                 let price = button.getAttribute("data-price");
-                let numberOfGuests = button.getAttribute("data-number-of-guests"); // Fetch number of guests from package
+                let numberOfGuests = button.getAttribute("data-number-of-guests");
 
                 document.getElementById("modalPackageId").value = packageId;
                 document.getElementById("modalPackageName").value = packageName;
                 document.getElementById("modalTotalAmountDisplay").value = "₱" + parseFloat(price).toLocaleString('en-US');
                 document.getElementById("modalTotalAmount").value = price;
-                document.getElementById("modalNumberOfGuests").value = numberOfGuests; // Set fixed number of guests (read-only)
+                document.getElementById("modalNumberOfGuests").value = numberOfGuests;
 
                 if (!calendarInitialized) {
                     var calendarEl = document.getElementById('calendar');
-
-                    // Get current date in Philippine time (GMT+8)
                     const now = new Date();
-                    const philippineTimeOffset = 8 * 60; // GMT+8 in minutes
-                    const localOffset = now.getTimezoneOffset(); // Local offset in minutes
+                    const philippineTimeOffset = 8 * 60;
+                    const localOffset = now.getTimezoneOffset();
                     const philippineTime = new Date(now.getTime() + (philippineTimeOffset + localOffset) * 60 * 1000);
-                    const today = new Date(philippineTime.toISOString().split('T')[0]); // Set to midnight of current day
+                    const today = new Date(philippineTime.toISOString().split('T')[0]);
 
                     var calendar = new FullCalendar.Calendar(calendarEl, {
                         initialView: 'dayGridMonth',
-                        initialDate: today, // Start calendar on current Philippine date
+                        initialDate: today,
                         headerToolbar: {
                             left: 'prev,next',
                             center: 'title',
@@ -318,20 +320,17 @@ try {
                         },
                         height: 'auto',
                         selectable: true,
-                        validRange: {
-                            start: today // Disable dates before today in Philippine time
-                        },
+                        validRange: { start: today },
                         events: occupiedDates.map(date => ({
                             title: 'Occupied',
                             start: date,
                             allDay: true,
-                            backgroundColor: '#dc3545', // Red for occupied
+                            backgroundColor: '#dc3545',
                             borderColor: '#dc3545',
                             editable: false,
-                            selectable: false // Prevent interaction with occupied dates
+                            selectable: false
                         })),
                         dateClick: function(info) {
-                            // Prevent booking on past dates or occupied dates
                             if (new Date(info.dateStr) < today) {
                                 alert('You cannot book a past date. Please select a future date.');
                                 return;
@@ -340,8 +339,6 @@ try {
                                 alert('This date is already occupied. Please choose another date.');
                                 return;
                             }
-
-                            // Clear previous selections and set new event
                             document.getElementById('eventDate').value = info.dateStr;
                             calendar.getEvents().forEach(event => {
                                 if (event.title === 'Selected') event.remove();
@@ -350,7 +347,7 @@ try {
                                 title: 'Selected',
                                 start: info.dateStr,
                                 allDay: true,
-                                color: '#28a745' // Green for selected
+                                color: '#28a745'
                             });
                         }
                     });
@@ -359,6 +356,104 @@ try {
                 }
             });
         });
+
+        // ---------------------------
+        // Client-side Pagination for Wedding Packages
+        // ---------------------------
+        let currentPage = <?php echo $currentPage; ?>;
+        const itemsPerPage = <?php echo $itemsPerPage; ?>;
+        const totalPackages = <?php echo $totalPackages; ?>;
+        const totalPages = <?php echo $totalPages; ?>;
+        const packages = <?php echo $packages_json; ?>;
+
+        function loadPackages(page) {
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+            currentPage = page;
+            document.getElementById('backButton').disabled = (currentPage === 1);
+            document.getElementById('nextButton').disabled = (currentPage === totalPages);
+            document.getElementById('loadingIndicator').style.display = 'block';
+            const container = document.getElementById('packagesContainer');
+            container.innerHTML = '';
+            const start = (page - 1) * itemsPerPage;
+            const end = Math.min(start + itemsPerPage, totalPackages);
+            for (let i = start; i < end; i++) {
+                const pkg = packages[i];
+                // Compute star rating based on price
+                let stars = Math.min(5, Math.ceil(pkg.price / 20000));
+                let starsHTML = '';
+                for (let s = 0; s < stars; s++) {
+                    starsHTML += '<small class="fa fa-star text-warning"></small>';
+                }
+                // Process features (assumes newline-delimited description)
+                let featuresArr = pkg.description.split('\n').filter(f => f.trim() !== '');
+                let featuresHTML = '';
+                featuresArr.forEach(feature => {
+                    featuresHTML += `<li class="mb-2 d-flex align-items-center">
+                        <i class="fa fa-check-circle text-success me-2"></i>
+                        ${feature.trim()}
+                    </li>`;
+                });
+                // Build the package card HTML
+                let cardHTML = `
+                    <div class="col-auto wow bounceInUp" data-wow-delay="0.1s">
+                        <div class="package-card h-100 rounded-lg shadow-md">
+                            <div class="package-header text-white text-center py-4">
+                                <h3 class="mb-0 font-wedding">${pkg.name}</h3>
+                                <div class="mt-2">
+                                    ${starsHTML}
+                                </div>
+                            </div>
+                            <div class="package-body p-4 text-content">
+                                <div class="package-details">
+                                    <h1 class="mb-3 text-center pricing-card-title">
+                                        <small class="align-top text-muted" style="font-size: 22px;">₱</small>
+                                        ${parseFloat(pkg.price).toLocaleString('en-US')}
+                                        <small class="align-bottom text-muted" style="font-size: 16px;">/ package</small>
+                                    </h1>
+                                    <p class="text-center mb-3 guests-count">
+                                        <i class="fa fa-users text-success me-1"></i> 
+                                        Up to ${pkg.number_of_guests} Guests
+                                    </p>
+                                </div>
+                                <ul class="list-unstyled mb-4 text-left">
+                                    ${featuresHTML}
+                                </ul>
+                            </div>
+                            <div class="package-footer text-center py-3">
+                                <button class="btn btn-primary rounded-pill py-2 px-4"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#bookingModal"
+                                    data-package-id="${pkg.package_id}"
+                                    data-package-name="${pkg.name}"
+                                    data-price="${pkg.price}"
+                                    data-number-of-guests="${pkg.number_of_guests}">
+                                    <i class="fa fa-arrow-right me-2"></i>Book Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
+            }
+            document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+
+        document.getElementById('backButton').addEventListener('click', function(){
+            if(currentPage > 1){
+                loadPackages(currentPage - 1);
+            }
+        });
+
+        document.getElementById('nextButton').addEventListener('click', function(){
+            if(currentPage < totalPages){
+                loadPackages(currentPage + 1);
+            }
+        });
+
+        // Initial load ng packages
+        loadPackages(currentPage);
     </script>
 </body>
 </html>
