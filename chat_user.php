@@ -1,57 +1,60 @@
 <?php
-require '../db.php';
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 session_start();
+require_once 'db.php';
 
-if (!isset($_SESSION['admin_id'])) {
-    header("Location: ../auth/admin_login.php");
-    exit();
-}
-
-if (!isset($_GET['booking_id']) || !is_numeric($_GET['booking_id'])) {
-    header("Location: orders.php");
-    exit();
+if (!isset($_SESSION['user_id']) || !isset($_GET['booking_id'])) {
+    header("Location: auth/login.php");
+    exit;
 }
 
 $booking_id = (int)$_GET['booking_id'];
 
 try {
     $stmt = $db->prepare("
-        SELECT eb.booking_id, u.first_name, u.last_name, p.name as package_name 
+        SELECT eb.booking_id, cp.name as package_name, cp.category 
         FROM event_bookings eb 
-        JOIN users u ON eb.user_id = u.user_id 
-        JOIN catering_packages p ON eb.package_id = p.package_id 
-        WHERE eb.booking_id = :booking_id
+        JOIN catering_packages cp ON eb.package_id = cp.package_id 
+        WHERE eb.booking_id = :booking_id AND eb.user_id = :user_id
     ");
-    $stmt->execute([':booking_id' => $booking_id]);
+    $stmt->execute([':booking_id' => $booking_id, ':user_id' => $_SESSION['user_id']]);
     $booking = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$booking) {
-        header("Location: orders.php");
-        exit();
+        header("Location: profile.php");
+        exit;
     }
 } catch (PDOException $e) {
-    error_log("Error fetching booking: " . $e->getMessage());
-    header("Location: orders.php");
-    exit();
+    echo "Database error: " . $e->getMessage();
+    exit;
 }
-
-$customer_name = htmlspecialchars($booking['first_name'] . ' ' . $booking['last_name']);
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Chat - Booking #<?php echo $booking_id; ?> - Catering Admin</title>
+    <title>Ticket - Booking #<?php echo $booking_id; ?> - Pochie Catering</title>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="../css/admin.css" rel="stylesheet">
-    <link href="../css/booking.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playball&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="lib/lightbox/css/lightbox.min.css" rel="stylesheet">
+    <link href="lib/owlcarousel/owl.carousel.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <link href="css/themes.css" rel="stylesheet">
+    <link href="css/chat.css" rel="stylesheet">
     <style>
         .chat-container {
             max-width: 800px;
             margin: 0 auto;
+            padding: 20px;
         }
         .chat-box {
             max-height: 400px;
@@ -107,45 +110,44 @@ $customer_name = htmlspecialchars($booking['first_name'] . ' ' . $booking['last_
         }
     </style>
 </head>
-<body class="admin-dashboard">
-    <?php include '../layout/sidebar.php'; ?>
+<body class="light-theme">
+    <?php include 'layout/navbar.php'; ?>
 
-    <div class="main-content">
-        <div class="container-fluid chat-container">
-            <h1 class="mb-4">Chat for Booking #<?php echo htmlspecialchars($booking['booking_id']); ?></h1>
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Conversation with <?php echo $customer_name; ?> - <?php echo htmlspecialchars($booking['package_name']); ?></h5>
-                </div>
-                <div class="card-body">
-                    <div id="chat-box" class="chat-box"></div>
-                    <form id="message-form" class="message-form">
-                        <input type="hidden" name="booking_id" value="<?php echo $booking_id; ?>">
-                        <div class="mb-3">
-                            <label for="message" class="form-label">Send a Message</label>
-                            <textarea class="form-control" id="message" name="message" rows="3" required placeholder="Type your message here..."></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-2"></i>Send</button>
-                        <a href="orders.php" class="btn btn-secondary">Back to Orders</a>
-                    </form>
-                </div>
+    <div class="container-fluid chat-container">
+        <h1 class="display-5 mb-4 text-center" style="font-family: 'Playball', cursive;">Chat Support Booking #<?php echo htmlspecialchars($booking['booking_id']); ?></h1>
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Ticket: <?php echo htmlspecialchars($booking['package_name']); ?> (<?php echo htmlspecialchars(str_replace('Catering', 'Party Catering', $booking['category'])); ?>)</h5>
+            </div>
+            <div class="card-body">
+                <div id="chat-box" class="chat-box"></div>
+                <form id="message-form" class="message-form">
+                    <input type="hidden" name="booking_id" value="<?php echo $booking_id; ?>">
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Your Message</label>
+                        <textarea class="form-control" id="message" name="message" rows="3" required placeholder="Type your concern or question here..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-2"></i>Send</button>
+                    <a href="profile.php" class="btn btn-secondary">Back to Profile</a>
+                </form>
             </div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../js/admin.js"></script>
+    <?php include 'layout/footer.php'; ?>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const chatBox = document.getElementById('chat-box');
             const messageForm = document.getElementById('message-form');
             let lastMessageId = 0;
 
-            // Fetch messages
+            // Function to fetch messages
             function fetchMessages() {
                 $.ajax({
-                    url: '../chat_api.php',
+                    url: 'chat_api.php',
                     method: 'GET',
                     data: { booking_id: <?php echo $booking_id; ?> },
                     success: function(response) {
@@ -154,9 +156,8 @@ $customer_name = htmlspecialchars($booking['first_name'] . ' ' . $booking['last_
                             response.data.messages.forEach(msg => {
                                 const messageDiv = document.createElement('div');
                                 messageDiv.className = `chat-message ${msg.sender === 'admin' ? 'admin' : 'user'}`;
-                                const senderName = msg.sender === 'admin' ? 'You' : '<?php echo $customer_name; ?>';
                                 messageDiv.innerHTML = `
-                                    <span class="sender">${senderName}:</span>
+                                    <span class="sender">${msg.sender === 'admin' ? 'Admin' : 'You'}:</span>
                                     <span>${msg.message}</span>
                                     <div class="time">${new Date(msg.created_at).toLocaleString()}</div>
                                 `;
@@ -174,23 +175,23 @@ $customer_name = htmlspecialchars($booking['first_name'] . ' ' . $booking['last_
                 });
             }
 
-            // Send message
+            // Handle message sending
             messageForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const formData = new FormData(messageForm);
                 
                 $.ajax({
-                    url: '../chat_api.php',
+                    url: 'chat_api.php',
                     method: 'POST',
                     data: formData,
                     processData: false,
                     contentType: false,
                     success: function(response) {
                         if (response.status === 'success') {
-                            fetchMessages(); // Update chat without redirect
+                            fetchMessages(); // Update chat without reload
                             document.getElementById('message').value = ''; // Clear textarea
                         } else {
-                            alert('Error sending message: ' . response.error);
+                            alert('Error sending message: ' + response.error);
                         }
                     },
                     error: function(xhr, status, error) {
@@ -200,9 +201,9 @@ $customer_name = htmlspecialchars($booking['first_name'] . ' ' . $booking['last_
                 });
             });
 
-            // Initial fetch and polling
+            // Initial fetch and periodic polling
             fetchMessages();
-            setInterval(fetchMessages, 2000); // Update every 2 seconds
+            setInterval(fetchMessages, 2000); // Check for new messages every 2 seconds
         });
     </script>
 </body>

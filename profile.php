@@ -11,7 +11,6 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 try {
-    // Fetch user profile
     $stmt = $db->prepare("SELECT user_id, first_name, middle_name, last_name, email, profile_picture, address, contact_no, birthdate, gender FROM users WHERE user_id = :user_id");
     $stmt->bindParam(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
     $stmt->execute();
@@ -24,7 +23,6 @@ try {
         $age = $today->diff($birthdate)->y;
     }
 
-    // Fetch all bookings for filtering, including category from catering_packages
     $bookingStmt = $db->prepare("
         SELECT eb.booking_id, eb.package_id, eb.event_type, eb.event_date, eb.event_time, eb.booking_status, eb.created_at, cp.category 
         FROM event_bookings eb 
@@ -40,7 +38,6 @@ try {
     die("Error fetching data: " . $e->getMessage());
 }
 
-// Function to format category name
 function formatCategory($category) {
     return str_replace('Catering', 'Party Catering', $category);
 }
@@ -48,29 +45,18 @@ function formatCategory($category) {
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - Pochie Catering</title>
-
-    <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playball&display=swap" rel="stylesheet">
-
-    <!-- Icon Font Stylesheet -->
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- Libraries Stylesheet -->
     <link href="lib/lightbox/css/lightbox.min.css" rel="stylesheet">
     <link href="lib/owlcarousel/owl.carousel.min.css" rel="stylesheet">
-
-    <!-- Customized Bootstrap Stylesheet -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
     <link href="css/themes.css" rel="stylesheet">
     <link href="css/profile.css" rel="stylesheet">
@@ -84,11 +70,20 @@ function formatCategory($category) {
             display: inline-block;
             margin-top: 5px;
         }
+        .chat-btn {
+            position: relative;
+            margin-top: 10px;
+        }
+        .chat-btn .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 0.7rem;
+            padding: 2px 5px;
+        }
     </style>
 </head>
-
 <body class="light-theme">
-
     <?php include 'layout/navbar.php'; ?>
 
     <!-- Profile Section -->
@@ -100,7 +95,6 @@ function formatCategory($category) {
                     <i class="fas fa-edit me-2"></i> Update Profile
                 </button>
             </div>
-
             <div class="row justify-content-center">
                 <div class="col-12 col-md-8 col-lg-6">
                     <div class="profile-card">
@@ -111,7 +105,6 @@ function formatCategory($category) {
                             <h2 class="text-primary mb-2" style="font-family: 'Playball', cursive;"><?php echo htmlspecialchars($user['first_name'] . " " . $user['last_name']); ?></h2>
                             <p class="text-muted mb-4"><?php echo htmlspecialchars($user['email']); ?></p>
                         </div>
-
                         <div class="profile-details">
                             <div class="profile-detail-item text-center">
                                 <i class="fas fa-birthday-cake"></i>
@@ -130,7 +123,6 @@ function formatCategory($category) {
                                 <span><?php echo htmlspecialchars($user['contact_no']); ?></span>
                             </div>
                         </div>
-
                         <div class="logout-container text-center mt-4">
                             <a href="./auth/logout_user.php" class="btn btn-danger logout-btn">
                                 <i class="fas fa-sign-out-alt me-2"></i> Logout
@@ -149,8 +141,6 @@ function formatCategory($category) {
                 <h2 class="display-5 mb-3" style="font-family: 'Playball', cursive;">Recent Bookings</h2>
                 <p class="fs-5 text-muted">Check the status of your recent catering bookings</p>
             </div>
-
-            <!-- Filter Buttons -->
             <div class="text-center mb-4">
                 <button class="btn filter-btn me-2" data-filter="all">All</button>
                 <button class="btn filter-btn me-2" data-filter="Wedding Catering">Wedding</button>
@@ -159,14 +149,18 @@ function formatCategory($category) {
                 <button class="btn filter-btn me-2" data-filter="Childrens Party Catering">Children’s</button>
                 <button class="btn filter-btn" data-filter="Private Catering">Private</button>
             </div>
-
             <div class="row justify-content-center">
                 <div class="col-12 col-md-8 col-lg-8">
                     <div id="bookings-container">
                         <?php if (empty($allBookings)): ?>
                             <p class="text-center text-muted">No recent bookings found.</p>
                         <?php else: ?>
-                            <?php foreach ($allBookings as $booking): ?>
+                            <?php foreach ($allBookings as $booking): 
+                                // Fetch unread message count for this booking (from admin)
+                                $chatStmt = $db->prepare("SELECT COUNT(*) as unread FROM chat_messages WHERE order_id = :booking_id AND sender = 'admin' AND created_at > (SELECT MAX(created_at) FROM chat_messages WHERE order_id = :booking_id AND sender = 'user')");
+                                $chatStmt->execute([':booking_id' => $booking['booking_id']]);
+                                $unreadCount = $chatStmt->fetch(PDO::FETCH_ASSOC)['unread'];
+                            ?>
                                 <div class="booking-card <?php echo htmlspecialchars(str_replace(' ', '-', strtolower($booking['category']))); ?>" data-type="<?php echo htmlspecialchars($booking['category']); ?>">
                                     <h5><?php echo htmlspecialchars($booking['event_type']); ?></h5>
                                     <div class="category-badge"><?php echo htmlspecialchars(formatCategory($booking['category'])); ?></div>
@@ -181,6 +175,12 @@ function formatCategory($category) {
                                             <?php echo ucfirst(htmlspecialchars($booking['booking_status'])); ?>
                                         </span>
                                     </p>
+                                    <a href="chat_user.php?booking_id=<?php echo $booking['booking_id']; ?>" class="btn btn-secondary btn-sm chat-btn">
+                                        <i class="fas fa-comments"></i> Chat
+                                        <?php if ($unreadCount > 0): ?>
+                                            <span class="badge bg-danger"><?php echo $unreadCount; ?></span>
+                                        <?php endif; ?>
+                                    </a>
                                 </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -252,8 +252,7 @@ function formatCategory($category) {
 
     <?php include 'layout/footer.php'; ?>
 
-    <!-- JavaScript Libraries -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="lib/wow/wow.min.js"></script>
     <script src="lib/easing/easing.min.js"></script>
@@ -263,7 +262,6 @@ function formatCategory($category) {
     <script src="lib/owlcarousel/owl.carousel.min.js"></script>
     <script src="js/main.js"></script>
     <script src="js/theme-switcher.js"></script>
-
     <script>
         new WOW().init();
 
@@ -276,7 +274,6 @@ function formatCategory($category) {
             reader.readAsDataURL(event.target.files[0]);
         }
 
-        // Booking Filter Functionality
         document.querySelectorAll('.filter-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const filter = this.getAttribute('data-filter').toLowerCase().trim();
@@ -291,15 +288,12 @@ function formatCategory($category) {
                     }
                 });
 
-                // Update button styles to indicate active filter
                 document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
             });
         });
 
-        // Set default filter to "All" on page load
         document.querySelector('.filter-btn[data-filter="all"]').click();
     </script>
-
 </body>
 </html>

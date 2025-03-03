@@ -2,19 +2,16 @@
 require '../db.php';
 session_start();
 
-// Check if admin is logged in
 if (!isset($_SESSION['admin_id'])) {
     header("Location: ../auth/admin_login.php");
     exit();
 }
 
-// Handle filtering via GET parameters
 $filterStatus = isset($_GET['status']) ? trim($_GET['status']) : '';
 $filterCustomer = isset($_GET['customer']) ? trim($_GET['customer']) : '';
 $filterPackage = isset($_GET['package']) ? trim($_GET['package']) : '';
 $filterDate = isset($_GET['date']) ? trim($_GET['date']) : '';
 
-// Build the SQL query with filters, including category
 $sql = "SELECT eb.*, u.first_name, u.last_name, p.name as package_name, p.category as package_category 
         FROM event_bookings eb 
         JOIN users u ON eb.user_id = u.user_id 
@@ -48,21 +45,15 @@ try {
     $bookings = [];
 }
 
-// Function to generate status badge class
 function getStatusClass($status) {
     switch ($status) {
-        case 'pending':
-            return 'bg-warning text-dark';
-        case 'approved':
-            return 'bg-success text-white';
-        case 'rejected':
-            return 'bg-danger text-white';
-        default:
-            return 'bg-secondary text-white';
+        case 'pending': return 'bg-warning text-dark';
+        case 'approved': return 'bg-success text-white';
+        case 'rejected': return 'bg-danger text-white';
+        default: return 'bg-secondary text-white';
     }
 }
 
-// Function to format category name
 function formatCategory($category) {
     return str_replace('Catering', 'Party Catering', $category);
 }
@@ -115,6 +106,16 @@ function formatCategory($category) {
             border-radius: 12px;
             background-color: #e9ecef;
         }
+        .chat-btn {
+            position: relative;
+        }
+        .chat-btn .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 0.7rem;
+            padding: 2px 5px;
+        }
         @media (max-width: 768px) {
             .filter-container .form-group {
                 margin-right: 0;
@@ -126,7 +127,7 @@ function formatCategory($category) {
             .filter-container button {
                 width: 100%;
             }
-            .status-btn {
+            .status-btn, .btn-sm {
                 padding: 3px 10px;
                 font-size: 0.8rem;
             }
@@ -145,7 +146,6 @@ function formatCategory($category) {
                     <h5 class="mb-0">Booking List</h5>
                 </div>
                 <div class="card-body">
-                    <!-- Filter Container -->
                     <div class="filter-container">
                         <form method="GET" class="row g-2">
                             <div class="col-md-3 col-12 form-group">
@@ -183,7 +183,7 @@ function formatCategory($category) {
                                     <th>Booking ID</th>
                                     <th>Customer</th>
                                     <th>Package</th>
-                                    <th>Category</th> <!-- New Column -->
+                                    <th>Category</th>
                                     <th>Number of Guests</th>
                                     <th>Status</th>
                                     <th>Chat</th>
@@ -196,22 +196,21 @@ function formatCategory($category) {
                                 if (empty($bookings)) {
                                     echo "<tr><td colspan='9' class='text-center text-muted'>No bookings found matching the filters.</td></tr>";
                                 } else {
-                                    foreach ($bookings as $row): ?>
+                                    foreach ($bookings as $row):
+                                        $chatStmt = $db->prepare("SELECT COUNT(*) as unread FROM chat_messages WHERE order_id = :booking_id AND sender = 'user' AND created_at > (SELECT IFNULL(MAX(created_at), '1970-01-01') FROM chat_messages WHERE order_id = :booking_id AND sender = 'admin')");
+                                        $chatStmt->execute([':booking_id' => $row['booking_id']]);
+                                        $unreadCount = $chatStmt->fetch(PDO::FETCH_ASSOC)['unread'];
+                                        ?>
                                         <tr>
                                             <td><?php echo htmlspecialchars($row['booking_id']); ?></td>
                                             <td><?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?></td>
                                             <td><?php echo htmlspecialchars($row['package_name']); ?></td>
-                                            <td>
-                                                <span class="category-badge">
-                                                    <?php echo htmlspecialchars(formatCategory($row['package_category'])); ?>
-                                                </span>
-                                            </td>
+                                            <td><span class="category-badge"><?php echo htmlspecialchars(formatCategory($row['package_category'])); ?></span></td>
                                             <td><?php echo htmlspecialchars($row['number_of_guests'] ?? 'Not set'); ?></td>
                                             <td>
                                                 <form method="POST" action="update_booking_status.php" style="display: inline;">
                                                     <input type="hidden" name="booking_id" value="<?php echo $row['booking_id']; ?>">
-                                                    <select name="booking_status" class="status-btn 
-                                                        <?php echo getStatusClass($row['booking_status']); ?>"
+                                                    <select name="booking_status" class="status-btn <?php echo getStatusClass($row['booking_status']); ?>"
                                                         onchange="this.form.submit()">
                                                         <option value="pending" <?php echo $row['booking_status'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
                                                         <option value="approved" <?php echo $row['booking_status'] === 'approved' ? 'selected' : ''; ?>>Approved</option>
@@ -220,8 +219,11 @@ function formatCategory($category) {
                                                 </form>
                                             </td>
                                             <td>
-                                                <a href="chat.php?booking_id=<?php echo $row['booking_id']; ?>" class="btn btn-secondary btn-sm">
+                                                <a href="chat.php?booking_id=<?php echo $row['booking_id']; ?>" class="btn btn-secondary btn-sm chat-btn">
                                                     <i class="fas fa-comments"></i> Chat
+                                                    <?php if ($unreadCount > 0): ?>
+                                                        <span class="badge bg-danger"><?php echo $unreadCount; ?></span>
+                                                    <?php endif; ?>
                                                 </a>
                                             </td>
                                             <td>₱<?php echo number_format($row['total_amount'], 2); ?></td>
