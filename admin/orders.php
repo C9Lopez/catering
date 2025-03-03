@@ -14,8 +14,8 @@ $filterCustomer = isset($_GET['customer']) ? trim($_GET['customer']) : '';
 $filterPackage = isset($_GET['package']) ? trim($_GET['package']) : '';
 $filterDate = isset($_GET['date']) ? trim($_GET['date']) : '';
 
-// Build the SQL query with filters
-$sql = "SELECT eb.*, u.first_name, u.last_name, p.name as package_name 
+// Build the SQL query with filters, including category
+$sql = "SELECT eb.*, u.first_name, u.last_name, p.name as package_name, p.category as package_category 
         FROM event_bookings eb 
         JOIN users u ON eb.user_id = u.user_id 
         JOIN catering_packages p ON eb.package_id = p.package_id 
@@ -44,9 +44,8 @@ try {
     $stmt->execute($params);
     $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    // Log error and display a minimal error message for admin
     error_log("Error fetching bookings: " . $e->getMessage());
-    $bookings = []; // Default to empty array if query fails
+    $bookings = [];
 }
 
 // Function to generate status badge class
@@ -62,6 +61,11 @@ function getStatusClass($status) {
             return 'bg-secondary text-white';
     }
 }
+
+// Function to format category name
+function formatCategory($category) {
+    return str_replace('Catering', 'Party Catering', $category);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -71,7 +75,7 @@ function getStatusClass($status) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/admin.css" rel="stylesheet">
-    <link href="../css/booking.css" rel="stylesheet"> <!-- For blue/black theme -->
+    <link href="../css/booking.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         .filter-container {
@@ -104,6 +108,12 @@ function getStatusClass($status) {
             border-radius: 20px;
             font-size: 0.9rem;
             transition: all 0.3s ease;
+        }
+        .category-badge {
+            font-size: 0.85rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background-color: #e9ecef;
         }
         @media (max-width: 768px) {
             .filter-container .form-group {
@@ -173,6 +183,7 @@ function getStatusClass($status) {
                                     <th>Booking ID</th>
                                     <th>Customer</th>
                                     <th>Package</th>
+                                    <th>Category</th> <!-- New Column -->
                                     <th>Number of Guests</th>
                                     <th>Status</th>
                                     <th>Chat</th>
@@ -182,15 +193,19 @@ function getStatusClass($status) {
                             </thead>
                             <tbody>
                                 <?php
-                                // Display filtered bookings
                                 if (empty($bookings)) {
-                                    echo "<tr><td colspan='8' class='text-center text-muted'>No bookings found matching the filters.</td></tr>";
+                                    echo "<tr><td colspan='9' class='text-center text-muted'>No bookings found matching the filters.</td></tr>";
                                 } else {
                                     foreach ($bookings as $row): ?>
                                         <tr>
                                             <td><?php echo htmlspecialchars($row['booking_id']); ?></td>
                                             <td><?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?></td>
                                             <td><?php echo htmlspecialchars($row['package_name']); ?></td>
+                                            <td>
+                                                <span class="category-badge">
+                                                    <?php echo htmlspecialchars(formatCategory($row['package_category'])); ?>
+                                                </span>
+                                            </td>
                                             <td><?php echo htmlspecialchars($row['number_of_guests'] ?? 'Not set'); ?></td>
                                             <td>
                                                 <form method="POST" action="update_booking_status.php" style="display: inline;">

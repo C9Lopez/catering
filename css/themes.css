@@ -240,8 +240,15 @@ body.dark-theme {
     color: #ffffff;
 }
 
+/* Gallery Theme switch */
 
+.light-theme .galler-text {
+     color: var (--light-text); /*Black solo text dark mode */
+}
 
+.dark-theme .galler-text {
+    color: var (--dark-text); /*White solo text dark mode */
+}
 
 
 

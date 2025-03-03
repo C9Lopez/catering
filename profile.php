@@ -39,6 +39,11 @@ try {
 } catch (PDOException $e) {
     die("Error fetching data: " . $e->getMessage());
 }
+
+// Function to format category name
+function formatCategory($category) {
+    return str_replace('Catering', 'Party Catering', $category);
+}
 ?>
 
 <!DOCTYPE html>
@@ -59,7 +64,6 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- Libraries Stylesheet -->
-    <!-- <link href="lib/animate/animate.min.css" rel="stylesheet"> -->
     <link href="lib/lightbox/css/lightbox.min.css" rel="stylesheet">
     <link href="lib/owlcarousel/owl.carousel.min.css" rel="stylesheet">
 
@@ -71,6 +75,16 @@ try {
     <link href="css/themes.css" rel="stylesheet">
     <link href="css/profile.css" rel="stylesheet">
     <link href="css/booking.css" rel="stylesheet">
+    <style>
+        .category-badge {
+            font-size: 0.85rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background-color: #e9ecef;
+            display: inline-block;
+            margin-top: 5px;
+        }
+    </style>
 </head>
 
 <body class="light-theme">
@@ -136,7 +150,7 @@ try {
                 <p class="fs-5 text-muted">Check the status of your recent catering bookings</p>
             </div>
 
-            <!-- Filter Buttons (Reinstated "All" button) -->
+            <!-- Filter Buttons -->
             <div class="text-center mb-4">
                 <button class="btn filter-btn me-2" data-filter="all">All</button>
                 <button class="btn filter-btn me-2" data-filter="Wedding Catering">Wedding</button>
@@ -155,6 +169,7 @@ try {
                             <?php foreach ($allBookings as $booking): ?>
                                 <div class="booking-card <?php echo htmlspecialchars(str_replace(' ', '-', strtolower($booking['category']))); ?>" data-type="<?php echo htmlspecialchars($booking['category']); ?>">
                                     <h5><?php echo htmlspecialchars($booking['event_type']); ?></h5>
+                                    <div class="category-badge"><?php echo htmlspecialchars(formatCategory($booking['category'])); ?></div>
                                     <p><strong>Event Date:</strong> <?php echo date('F j, Y', strtotime($booking['event_date'])); ?></p>
                                     <p><strong>Event Time:</strong> <?php echo date('h:i A', strtotime($booking['event_time'])); ?></p>
                                     <p><strong>Booking Date:</strong> <?php echo date('F j, Y, h:i A', strtotime($booking['created_at'])); ?></p>
@@ -261,10 +276,10 @@ try {
             reader.readAsDataURL(event.target.files[0]);
         }
 
-        // Booking Filter Functionality (Updated for exact matches)
+        // Booking Filter Functionality
         document.querySelectorAll('.filter-btn').forEach(button => {
             button.addEventListener('click', function() {
-                const filter = this.getAttribute('data-filter').toLowerCase().trim(); // Case-insensitive and trim whitespace
+                const filter = this.getAttribute('data-filter').toLowerCase().trim();
                 const cards = document.querySelectorAll('.booking-card');
                 
                 cards.forEach(card => {

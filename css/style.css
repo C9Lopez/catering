@@ -84,8 +84,8 @@
         }
         
         .service-box:hover {
-            transform: translateY(-8px);
-            box-shadow: 0px 10px 30px rgb(0, 81, 255);
+            transform: translateY(-10px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
     
         .service-box i {

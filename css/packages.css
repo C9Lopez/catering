@@ -1,24 +1,20 @@
-/* Dark Mode Default (can be toggled via theme switcher) */
-body.light-theme .container-fluid {
-    background-color: #f5f7fa;
+/* General Container */
+#packagesContainer {
+    justify-content: center;
 }
 
-body:not(.light-theme) .container-fluid {
-    background-color: #1a1a1a;
-}
-
-#packages-container {
-    justify-content: center; /* Center cards horizontally */
-}
-
+/* Package Card */
 .package-card {
     border: none;
     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
     border-radius: 17px;
     overflow: hidden;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-    margin-bottom: 3rem;
-    width: 500px; /* Increased width for larger cards */
+    margin-bottom: 2rem;
+    width: 100%; /* Full width within column */
+    max-width: 450px; /* Maximum width for larger screens */
+    margin-left: auto;
+    margin-right: auto;
 }
 
 body.light-theme .package-card {
@@ -29,28 +25,30 @@ body:not(.light-theme) .package-card {
     background-color: #2d2d2d;
 }
 
-
-
 .package-card:hover {
-    transform: translateY(-10px);
+    transform: translateY(-5px);
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
 }
 
+/* Package Header */
 .package-header {
     font-family: 'Playball', cursive;
-    background: linear-gradient(135deg, #e74c3c, #c0392b);
-    border-radius: 10px 10px 0 0;
+    background: linear-gradient(135deg, #2d37ff, #3a03ff);
+    border-radius: 17px 17px 0 0;
+    padding: 1.5rem;
 }
 
 .package-header h3 {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 600;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    margin-bottom: 0.5rem;
 }
 
+/* Package Body */
 .package-body {
-    padding: 3rem;
-    max-height: 450px;
+    padding: 1.5rem;
+    max-height: 400px;
     overflow-y: auto;
 }
 
@@ -66,9 +64,8 @@ body:not(.light-theme) .package-body {
     color: #d1d1d1;
 }
 
-/* Style for scrollbar */
 .package-body::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
 }
 
 .package-body::-webkit-scrollbar-track {
@@ -77,27 +74,28 @@ body:not(.light-theme) .package-body {
 }
 
 .package-body::-webkit-scrollbar-thumb {
-    background: #e74c3c;
+    background: #0022ff;
     border-radius: 10px;
 }
 
 .package-body::-webkit-scrollbar-thumb:hover {
-    background: #c0392b;
+    background: #0015ff;
 }
 
 .package-body ul li {
-    font-size: 1rem;
-    line-height: 1.6;
-    padding-left: 0.5rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    padding-left: 0.25rem;
 }
 
 .package-body .fa-check-circle {
-    font-size: 1.1rem;
+    font-size: 1rem;
 }
 
 .pricing-card-title {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 700;
+    line-height: 1.2;
 }
 
 body.light-theme .pricing-card-title {
@@ -109,7 +107,7 @@ body:not(.light-theme) .pricing-card-title {
 }
 
 .guests-count {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 500;
     margin-bottom: 1rem;
 }
@@ -126,8 +124,10 @@ body:not(.light-theme) .guests-count {
     color: #6c757d;
 }
 
+/* Package Footer */
 .package-footer {
-    border-radius: 0 0 10px 10px;
+    border-radius: 0 0 17px 17px;
+    padding: 1rem;
 }
 
 body.light-theme .package-footer {
@@ -138,97 +138,100 @@ body:not(.light-theme) .package-footer {
     background-color: #2d2d2d;
 }
 
-.btn-primary {
-    background: #ffffff;
-    color: #000000;
-    border: none;
-    font-weight: 600;
-    padding: 0.75rem 2rem;
-    border-radius: 25px;
-    transition: background 0.3s ease, transform 0.3s ease, color 0.3s ease;
-}
-
-.btn-primary:hover {
-    background: #e74c3c;
-    color: #ffffff;
-    transform: translateY(-2px);
-}
-
-.text-primary {
-    color: #e74c3c !important;
-}
-
-.text-title {
-    color: #333 !important;
-}
-
-body.light-theme .text-title {
-    color: #333 !important;
-}
-
-body:not(.light-theme) .text-title {
-    color: #ffffff !important;
-}
-
-.text-subtitle {
-    color: #6c757d !important;
-}
-
-body.light-theme .text-subtitle {
-    color: #6c757d !important;
-}
-
-body:not(.light-theme) .text-subtitle {
-    color: #6c757d !important;
-}
-
-.text-content {
-    color: #495057 !important;
-}
-
-body.light-theme .text-content {
-    color: #495057 !important;
-}
-
-body:not(.light-theme) .text-content {
-    color: #d1d1d1 !important;
-}
-
-.text-dark {
-    color: #333 !important;
-}
-
-.text-muted {
-    color: #6c757d !important;
-}
-
-.text-success {
-    color: #28a745 !important;
-}
-
+/* Typography */
 .font-wedding {
     font-family: 'Playball', cursive;
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 600;
 }
 
 .display-4 {
-    font-size: 3rem;
+    font-size: 2.5rem;
 }
 
-/* Pagination Button Styles */
-.btn-outline-light {
-    border-color: #ffffff;
-    color: #ffffff;
+/* Pagination Buttons */
+.pagination-buttons {
+    text-align: center;
+    margin-top: 2rem;
 }
 
-body.light-theme .btn-outline-light {
-    border-color: #333;
-    color: #333;
+.pagination-buttons button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 0 0.5rem;
+    transition: background-color 0.3s ease;
 }
 
-.btn-outline-light:hover {
-    background-color: #e74c3c;
-    border-color: #e74c3c;
-    color: #ffffff;
+.pagination-buttons button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.pagination-buttons button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+/* Responsive Design */
+@media (max-width: 576px) {
+    .package-header {
+        padding: 1rem;
+    }
+    .package-header h3 {
+        font-size: 1.25rem;
+    }
+    .package-body {
+        padding: 1rem;
+        max-height: 350px;
+    }
+    .pricing-card-title {
+        font-size: 1.75rem;
+    }
+    .guests-count {
+        font-size: 0.9rem;
+    }
+    .package-body ul li {
+        font-size: 0.85rem;
+    }
+    .package-footer {
+        padding: 0.75rem;
+    }
+    .package-footer .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+    .display-4 {
+        font-size: 2rem;
+    }
+    .pagination-buttons button {
+        padding: 0.5rem 1rem;
+        margin: 0 0.25rem;
+    }
+}
+
+@media (min-width: 577px) and (max-width: 768px) {
+    .package-header {
+        padding: 1.25rem;
+    }
+    .package-header h3 {
+        font-size: 1.35rem;
+    }
+    .package-body {
+        padding: 1.25rem;
+    }
+    .pricing-card-title {
+        font-size: 2rem;
+    }
+    .package-footer .btn {
+        padding: 0.6rem 1.2rem;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 992px) {
+    .package-card {
+        max-width: 400px;
+    }
 }
