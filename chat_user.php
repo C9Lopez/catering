@@ -1,135 +1,177 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// Require database connection
+require 'db.php';
 
+// Start or resume session
 session_start();
-require_once 'db.php';
 
-if (!isset($_SESSION['user_id']) || !isset($_GET['booking_id'])) {
-    header("Location: auth/login.php");
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    echo "<script>
+        alert('You are not logged in. Please log in first.');
+        window.location.href = 'auth/login.php';
+    </script>";
     exit;
 }
 
-$booking_id = (int)$_GET['booking_id'];
+// Get booking ID from URL and validate
+$booking_id = isset($_GET['booking_id']) ? (int)$_GET['booking_id'] : 0;
+
+if ($booking_id <= 0) {
+    die("Invalid booking ID.");
+}
 
 try {
-    $stmt = $db->prepare("
-        SELECT eb.booking_id, cp.name as package_name, cp.category 
-        FROM event_bookings eb 
-        JOIN catering_packages cp ON eb.package_id = cp.package_id 
-        WHERE eb.booking_id = :booking_id AND eb.user_id = :user_id
-    ");
-    $stmt->execute([':booking_id' => $booking_id, ':user_id' => $_SESSION['user_id']]);
-    $booking = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Fetch user's full name for later use on admin side
+    $userStmt = $db->prepare("SELECT first_name, last_name FROM users WHERE user_id = :user_id");
+    $userStmt->bindParam(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
+    $userStmt->execute();
+    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+    $userFullName = $user ? htmlspecialchars(trim($user['first_name'] . ' ' . $user['last_name'])) : 'User';
+
+    // Fetch booking and admin details for the chat
+    $bookingStmt = $db->prepare("SELECT eb.event_type, au.first_name AS admin_first_name, au.last_name AS admin_last_name 
+                                FROM event_bookings eb 
+                                LEFT JOIN admin_user au ON au.admin_id = (SELECT admin_id FROM notifications WHERE booking_id = eb.booking_id LIMIT 1)
+                                WHERE eb.booking_id = :booking_id AND eb.user_id = :user_id");
+    $bookingStmt->bindParam(':booking_id', $booking_id, PDO::PARAM_INT);
+    $bookingStmt->bindParam(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
+    $bookingStmt->execute();
+    $booking = $bookingStmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$booking) {
-        header("Location: profile.php");
-        exit;
+        die("Booking not found or you do not have access.");
     }
+
+    // Fetch all chat messages for this booking, ordered chronologically
+    $messageStmt = $db->prepare("SELECT * FROM chat_messages WHERE order_id = :booking_id ORDER BY created_at ASC");
+    $messageStmt->bindParam(':booking_id', $booking_id, PDO::PARAM_INT);
+    $messageStmt->execute();
+    $messages = $messageStmt->fetchAll(PDO::FETCH_ASSOC);
+
 } catch (PDOException $e) {
-    echo "Database error: " . $e->getMessage();
-    exit;
+    // Log error for debugging and display a user-friendly message
+    error_log("Database error in chat_user.php: " . $e->getMessage());
+    die("An error occurred while loading the chat. Please try again later.");
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Ticket - Booking #<?php echo $booking_id; ?> - Pochie Catering</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - Booking #<?php echo $booking_id; ?> - Pochie Catering</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playball&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="lib/lightbox/css/lightbox.min.css" rel="stylesheet">
-    <link href="lib/owlcarousel/owl.carousel.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
     <link href="css/themes.css" rel="stylesheet">
-    <link href="css/chat.css" rel="stylesheet">
     <style>
         .chat-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .chat-box {
-            max-height: 400px;
+            height: 70vh;
             overflow-y: auto;
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 5px;
-            background: #f9f9f9;
+            padding: 20px;
+            background: #f8f9fa; /* Light gray background for contrast */
+            border-radius: 8px;
+            margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9ecef;
         }
-        .chat-message {
+        .message {
             margin-bottom: 15px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            max-width: 70%;
+            font-size: 1rem;
+            line-height: 1.5;
+            transition: all 0.3s ease;
+            word-wrap: break-word; /* Ensure long messages wrap properly */
+        }
+        .message.user {
+            background: #007bff; /* Blue for user (you) messages */
+            color: white;
+            margin-left: auto;
+        }
+        .message.admin {
+            background: #28a745; /* Green for admin messages */
+            color: white;
+        }
+        .message.error {
+            background: #dc3545; /* Red for error messages */
+            color: white;
+            margin-bottom: 15px;
+        }
+        .message:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        .chat-input {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .chat-input input {
+            flex-grow: 1;
+            border-radius: 4px;
+            border: 1px solid #ced4da;
             padding: 10px;
-            border-radius: 5px;
-            background: #fff;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            font-size: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            background-color: #ffffff; /* White background for input */
         }
-        .chat-message.admin {
-            text-align: right;
-            background: #e9f7ff;
+        .chat-input button {
+            padding: 10px 20px;
+            font-weight: 500;
+            background-color: #007bff; /* Blue button to match theme */
+            border: none;
+            border-radius: 4px;
+            color: white;
+            transition: background-color 0.3s ease, transform 0.3s ease;
         }
-        .chat-message.user {
-            text-align: left;
-            background: #f0f0f0;
+        .chat-input button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+            transform: translateY(-2px);
+            cursor: pointer;
         }
-        .chat-message .sender {
-            font-weight: bold;
-            margin-right: 5px;
-            color: #333;
-        }
-        .chat-message .time {
-            font-size: 0.8rem;
-            color: #777;
-            display: block;
-            margin-top: 5px;
-        }
-        .message-form {
-            margin-top: 20px;
-        }
-        .chat-box::-webkit-scrollbar {
-            width: 6px;
-        }
-        .chat-box::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        .chat-box::-webkit-scrollbar-thumb {
-            background: #007bff;
-            border-radius: 10px;
-        }
-        .chat-box::-webkit-scrollbar-thumb:hover {
-            background: #0056b3;
+        .text-muted {
+            font-size: 0.9rem;
+            opacity: 0.8;
         }
     </style>
 </head>
 <body class="light-theme">
     <?php include 'layout/navbar.php'; ?>
 
-    <div class="container-fluid chat-container">
-        <h1 class="display-5 mb-4 text-center" style="font-family: 'Playball', cursive;">Chat Support Booking #<?php echo htmlspecialchars($booking['booking_id']); ?></h1>
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Ticket: <?php echo htmlspecialchars($booking['package_name']); ?> (<?php echo htmlspecialchars(str_replace('Catering', 'Party Catering', $booking['category'])); ?>)</h5>
-            </div>
-            <div class="card-body">
-                <div id="chat-box" class="chat-box"></div>
-                <form id="message-form" class="message-form">
-                    <input type="hidden" name="booking_id" value="<?php echo $booking_id; ?>">
-                    <div class="mb-3">
-                        <label for="message" class="form-label">Your Message</label>
-                        <textarea class="form-control" id="message" name="message" rows="3" required placeholder="Type your concern or question here..."></textarea>
+    <div class="container-fluid py-6 wow fadeInUp" data-wow-delay="0.1s">
+        <div class="container">
+            <h1 class="display-5 text-center mb-4" style="font-family: 'Playball', cursive;">
+                Chat - Booking #<?php echo $booking_id; ?> (<?php echo htmlspecialchars($booking['event_type']); ?>)
+            </h1>
+            
+            <div class="card">
+                <div class="card-body">
+                    <div class="chat-container" id="chatMessages">
+                        <?php foreach ($messages as $msg): ?>
+                            <div class="message <?php echo $msg['sender'] === 'user' ? 'user' : 'admin'; ?>">
+                                <strong><?php echo $msg['sender'] === 'user' ? 'You' : 'Admin'; ?>:</strong> 
+                                <?php echo htmlspecialchars($msg['message']); ?>
+                                <small class="text-muted d-block mt-2">Sent at <?php echo date('h:i A', strtotime($msg['created_at'])); ?></small>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-2"></i>Send</button>
-                    <a href="profile.php" class="btn btn-secondary">Back to Profile</a>
-                </form>
+                    
+                    <form id="chatForm" method="POST" action="admin/save_chat.php">
+                        <input type="hidden" name="booking_id" value="<?php echo $booking_id; ?>">
+                        <input type="hidden" name="sender" value="user">
+                        <div class="chat-input">
+                            <input type="text" id="message" name="message" class="form-control" placeholder="Type a message..." required>
+                            <button type="submit" class="btn btn-primary">Send</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -138,72 +180,78 @@ try {
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/wow/wow.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const chatBox = document.getElementById('chat-box');
-            const messageForm = document.getElementById('message-form');
-            let lastMessageId = 0;
+        // Initialize WOW.js animations
+        new WOW().init();
 
-            // Function to fetch messages
-            function fetchMessages() {
-                $.ajax({
-                    url: 'chat_api.php',
-                    method: 'GET',
-                    data: { booking_id: <?php echo $booking_id; ?> },
-                    success: function(response) {
-                        if (response.status === 'success') {
-                            chatBox.innerHTML = '';
-                            response.data.messages.forEach(msg => {
-                                const messageDiv = document.createElement('div');
-                                messageDiv.className = `chat-message ${msg.sender === 'admin' ? 'admin' : 'user'}`;
-                                messageDiv.innerHTML = `
-                                    <span class="sender">${msg.sender === 'admin' ? 'Admin' : 'You'}:</span>
-                                    <span>${msg.message}</span>
-                                    <div class="time">${new Date(msg.created_at).toLocaleString()}</div>
-                                `;
-                                chatBox.appendChild(messageDiv);
-                                if (msg.id > lastMessageId) lastMessageId = msg.id;
-                            });
-                            chatBox.scrollTop = chatBox.scrollHeight;
-                        } else {
-                            console.error('Error fetching messages:', response.error);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('AJAX error:', error);
+        // Function to fetch and update chat messages in real-time, ensuring styles persist
+        function fetchMessages() {
+            $.ajax({
+                url: 'admin/fetch_chat.php',
+                method: 'GET',
+                data: { booking_id: <?php echo $booking_id; ?>, context: 'user' }, // Explicitly indicate user context
+                success: function(response) {
+                    if (typeof response === 'object' && response.error) {
+                        console.error('Error fetching messages:', response.error);
+                        $('#chatMessages').append('<div class="message error">Error loading messages: ' + response.error + '</div>');
+                    } else if (typeof response === 'string') {
+                        $('#chatMessages').html(response);
+                        $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight); // Auto-scroll to latest message
+                    } else {
+                        console.error('Unexpected response format:', response);
+                        $('#chatMessages').append('<div class="message error">Unexpected response format. Please try again.</div>');
                     }
-                });
-            }
-
-            // Handle message sending
-            messageForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const formData = new FormData(messageForm);
-                
-                $.ajax({
-                    url: 'chat_api.php',
-                    method: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        if (response.status === 'success') {
-                            fetchMessages(); // Update chat without reload
-                            document.getElementById('message').value = ''; // Clear textarea
-                        } else {
-                            alert('Error sending message: ' + response.error);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('AJAX error:', error);
-                        alert('Failed to send message');
-                    }
-                });
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error fetching messages:', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText,
+                        url: xhr.url
+                    });
+                    $('#chatMessages').append('<div class="message error">Network error loading messages: ' + error + '</div>');
+                }
             });
+        }
 
-            // Initial fetch and periodic polling
-            fetchMessages();
-            setInterval(fetchMessages, 2000); // Check for new messages every 2 seconds
+        // Poll for new messages every 2 seconds
+        setInterval(fetchMessages, 2000);
+
+        // Initial message load
+        fetchMessages();
+
+        // Handle form submission for sending messages
+        $('#chatForm').submit(function(e) {
+            e.preventDefault();
+            const message = $('#message').val().trim();
+            if (!message) {
+                alert('Please enter a message.');
+                return;
+            }
+            $.ajax({
+                url: 'admin/save_chat.php',
+                method: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    const data = JSON.parse(response);
+                    if (data.success) {
+                        $('#message').val(''); // Clear input after successful send
+                        fetchMessages(); // Refresh messages
+                    } else {
+                        alert('Error: ' + (data.message || 'Failed to send message'));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error sending message:', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText,
+                        url: xhr.url
+                    });
+                    alert('Error sending message: ' + error + ' (Status: ' + status + ')');
+                }
+            });
         });
     </script>
 </body>

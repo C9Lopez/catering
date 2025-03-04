@@ -1,132 +1,217 @@
 <?php
+// Require database connection
 require '../db.php';
+
+// Start or resume session for admin authentication
 session_start();
 
+// Check if admin is logged in; redirect if not
 if (!isset($_SESSION['admin_id'])) {
     header("Location: ../auth/admin_login.php");
-    exit();
+    exit;
 }
 
-if (!isset($_GET['booking_id']) || !is_numeric($_GET['booking_id'])) {
-    header("Location: orders.php");
-    exit();
-}
+// Get booking ID from URL and validate it
+$booking_id = isset($_GET['booking_id']) ? (int)$_GET['booking_id'] : 0;
 
-$booking_id = (int)$_GET['booking_id'];
+if ($booking_id <= 0) {
+    die("Invalid booking ID. Please provide a valid booking ID.");
+}
 
 try {
-    $stmt = $db->prepare("
-        SELECT eb.booking_id, u.first_name, u.last_name, p.name as package_name 
-        FROM event_bookings eb 
-        JOIN users u ON eb.user_id = u.user_id 
-        JOIN catering_packages p ON eb.package_id = p.package_id 
-        WHERE eb.booking_id = :booking_id
-    ");
-    $stmt->execute([':booking_id' => $booking_id]);
+    // Fetch booking and user details for the chat, including user’s full name
+    $stmt = $db->prepare("SELECT u.first_name, u.last_name, u.user_id, eb.event_type 
+                         FROM event_bookings eb 
+                         JOIN users u ON eb.user_id = u.user_id 
+                         WHERE eb.booking_id = :booking_id");
+    $stmt->bindParam(':booking_id', $booking_id, PDO::PARAM_INT);
+    $stmt->execute();
     $booking = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$booking) {
-        header("Location: orders.php");
-        exit();
+        die("Booking not found. Please check the booking ID or contact support.");
     }
-} catch (PDOException $e) {
-    error_log("Error fetching booking: " . $e->getMessage());
-    header("Location: orders.php");
-    exit();
-}
 
-$customer_name = htmlspecialchars($booking['first_name'] . ' ' . $booking['last_name']);
+    // Construct user’s full name for display in messages
+    $userFullName = htmlspecialchars(trim($booking['first_name'] . ' ' . $booking['last_name']));
+
+    // Fetch all chat messages for this booking, ordered chronologically
+    $messageStmt = $db->prepare("SELECT * FROM chat_messages WHERE order_id = :booking_id ORDER BY created_at ASC");
+    $messageStmt->bindParam(':booking_id', $booking_id, PDO::PARAM_INT);
+    $messageStmt->execute();
+    $messages = $messageStmt->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (PDOException $e) {
+    // Log database error for debugging and display a user-friendly message
+    error_log("Database error in chat.php: " . $e->getMessage());
+    die("An error occurred while loading the chat. Please try again later or contact support.");
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Chat - Booking #<?php echo $booking_id; ?> - Catering Admin</title>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - Booking #<?php echo $booking_id; ?> - Catering Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/admin.css" rel="stylesheet">
-    <link href="../css/booking.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
+        /* Chat container styling for blue/black theme */
         .chat-container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .chat-box {
-            max-height: 400px;
+            height: 70vh;
             overflow-y: auto;
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 5px;
-            background: #f9f9f9;
+            padding: 20px;
+            background: #f8f9fa; /* Light gray background for contrast with dark theme */
+            border-radius: 8px;
+            margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9ecef;
         }
-        .chat-message {
+
+        /* Message styling */
+        .message {
             margin-bottom: 15px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            max-width: 70%;
+            font-size: 1rem;
+            line-height: 1.5;
+            transition: all 0.3s ease;
+            word-wrap: break-word; /* Ensure long messages wrap properly */
+        }
+
+        /* User (customer) message styling - Blue */
+        .message.user {
+            background: #007bff !important;
+            color: white !important;
+            margin-left: auto !important;
+        }
+
+        /* Admin message styling - Green */
+        .message.admin {
+            background: #28a745 !important;
+            color: white !important;
+        }
+
+        /* Error message styling - Red */
+        .message.error {
+            background: #dc3545 !important;
+            color: white !important;
+            margin-bottom: 15px;
+        }
+
+        /* Hover effect for messages */
+        .message:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* Chat input styling */
+        .chat-input {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .chat-input input {
+            flex-grow: 1;
+            border-radius: 4px;
+            border: 1px solid #ced4da;
             padding: 10px;
-            border-radius: 5px;
-            background: #fff;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            font-size: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            background-color: #ffffff; /* White background for input */
         }
-        .chat-message.admin {
-            text-align: right;
-            background: #e9f7ff;
+
+        .chat-input button {
+            padding: 10px 20px;
+            font-weight: 500;
+            background-color: #007bff; /* Blue button to match theme */
+            border: none;
+            border-radius: 4px;
+            color: white;
+            transition: background-color 0.3s ease, transform 0.3s ease;
         }
-        .chat-message.user {
-            text-align: left;
-            background: #f0f0f0;
+
+        .chat-input button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+            transform: translateY(-2px);
+            cursor: pointer;
         }
-        .chat-message .sender {
-            font-weight: bold;
-            margin-right: 5px;
+
+        /* Timestamp styling */
+        .text-muted {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Ensure sidebar and main content align with blue/black theme */
+        .admin-dashboard {
+            background-color: #f8f9fa;
             color: #333;
         }
-        .chat-message .time {
-            font-size: 0.8rem;
-            color: #777;
-            display: block;
-            margin-top: 5px;
+
+        .main-content {
+            padding: 20px;
+            background-color: #ffffff;
         }
-        .message-form {
-            margin-top: 20px;
+
+        h1 {
+            font-family: 'Arial', sans-serif;
+            color: #007bff;
+            font-weight: 600;
+            margin-bottom: 20px;
         }
-        .chat-box::-webkit-scrollbar {
-            width: 6px;
-        }
-        .chat-box::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        .chat-box::-webkit-scrollbar-thumb {
-            background: #007bff;
-            border-radius: 10px;
-        }
-        .chat-box::-webkit-scrollbar-thumb:hover {
-            background: #0056b3;
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 60vh;
+                padding: 15px;
+            }
+            .message {
+                max-width: 90%;
+                font-size: 0.9rem;
+                padding: 10px 12px;
+            }
+            .chat-input {
+                gap: 10px;
+            }
+            .chat-input input, .chat-input button {
+                padding: 8px;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
 <body class="admin-dashboard">
     <?php include '../layout/sidebar.php'; ?>
-
+    
     <div class="main-content">
-        <div class="container-fluid chat-container">
-            <h1 class="mb-4">Chat for Booking #<?php echo htmlspecialchars($booking['booking_id']); ?></h1>
+        <div class="container-fluid">
+            <h1>Chat - Booking #<?php echo $booking_id; ?> (<?php echo htmlspecialchars($booking['first_name'] . ' ' . $booking['last_name']); ?> - <?php echo htmlspecialchars($booking['event_type']); ?>)</h1>
+            
             <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Conversation with <?php echo $customer_name; ?> - <?php echo htmlspecialchars($booking['package_name']); ?></h5>
-                </div>
                 <div class="card-body">
-                    <div id="chat-box" class="chat-box"></div>
-                    <form id="message-form" class="message-form">
+                    <div class="chat-container" id="chatMessages">
+                        <?php foreach ($messages as $msg): ?>
+                            <div class="message <?php echo $msg['sender'] === 'admin' ? 'admin' : 'user'; ?>">
+                                <strong><?php echo $msg['sender'] === 'admin' ? 'Admin' : $userFullName; ?>:</strong> 
+                                <?php echo htmlspecialchars($msg['message']); ?>
+                                <small class="text-muted d-block mt-2">Sent at <?php echo date('h:i A', strtotime($msg['created_at'])); ?></small>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    
+                    <form id="chatForm" method="POST" action="save_chat.php">
                         <input type="hidden" name="booking_id" value="<?php echo $booking_id; ?>">
-                        <div class="mb-3">
-                            <label for="message" class="form-label">Send a Message</label>
-                            <textarea class="form-control" id="message" name="message" rows="3" required placeholder="Type your message here..."></textarea>
+                        <input type="hidden" name="sender" value="admin">
+                        <div class="chat-input">
+                            <input type="text" id="message" name="message" class="form-control" placeholder="Type a message..." required>
+                            <button type="submit" class="btn btn-primary">Send</button>
                         </div>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-2"></i>Send</button>
-                        <a href="orders.php" class="btn btn-secondary">Back to Orders</a>
                     </form>
                 </div>
             </div>
@@ -135,74 +220,76 @@ $customer_name = htmlspecialchars($booking['first_name'] . ' ' . $booking['last_
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../js/admin.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const chatBox = document.getElementById('chat-box');
-            const messageForm = document.getElementById('message-form');
-            let lastMessageId = 0;
-
-            // Fetch messages
-            function fetchMessages() {
-                $.ajax({
-                    url: '../chat_api.php',
-                    method: 'GET',
-                    data: { booking_id: <?php echo $booking_id; ?> },
-                    success: function(response) {
-                        if (response.status === 'success') {
-                            chatBox.innerHTML = '';
-                            response.data.messages.forEach(msg => {
-                                const messageDiv = document.createElement('div');
-                                messageDiv.className = `chat-message ${msg.sender === 'admin' ? 'admin' : 'user'}`;
-                                const senderName = msg.sender === 'admin' ? 'You' : '<?php echo $customer_name; ?>';
-                                messageDiv.innerHTML = `
-                                    <span class="sender">${senderName}:</span>
-                                    <span>${msg.message}</span>
-                                    <div class="time">${new Date(msg.created_at).toLocaleString()}</div>
-                                `;
-                                chatBox.appendChild(messageDiv);
-                                if (msg.id > lastMessageId) lastMessageId = msg.id;
-                            });
-                            chatBox.scrollTop = chatBox.scrollHeight;
-                        } else {
-                            console.error('Error fetching messages:', response.error);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('AJAX error:', error);
+        // Function to fetch and update chat messages in real-time, ensuring styles persist
+        function fetchMessages() {
+            $.ajax({
+                url: 'fetch_chat.php',
+                method: 'GET',
+                data: { booking_id: <?php echo $booking_id; ?>, context: 'admin' }, // Explicitly indicate admin context
+                success: function(response) {
+                    if (typeof response === 'object' && response.error) {
+                        console.error('Error fetching messages:', response.error);
+                        $('#chatMessages').append('<div class="message error">Error loading messages: ' + response.error + '</div>');
+                    } else if (typeof response === 'string') {
+                        // Ensure styles are applied by wrapping response in a div with chat-container class
+                        const styledResponse = '<div class="chat-container">' + response + '</div>';
+                        $('#chatMessages').html(response); // Use raw response for simplicity, but ensure CSS is loaded
+                        $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight); // Auto-scroll to latest message
+                    } else {
+                        console.error('Unexpected response format:', response);
+                        $('#chatMessages').append('<div class="message error">Unexpected response format. Please try again.</div>');
                     }
-                });
-            }
-
-            // Send message
-            messageForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const formData = new FormData(messageForm);
-                
-                $.ajax({
-                    url: '../chat_api.php',
-                    method: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        if (response.status === 'success') {
-                            fetchMessages(); // Update chat without redirect
-                            document.getElementById('message').value = ''; // Clear textarea
-                        } else {
-                            alert('Error sending message: ' . response.error);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('AJAX error:', error);
-                        alert('Failed to send message');
-                    }
-                });
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error fetching messages:', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText,
+                        url: xhr.url
+                    });
+                    $('#chatMessages').append('<div class="message error">Network error loading messages: ' + error + '</div>');
+                }
             });
+        }
 
-            // Initial fetch and polling
-            fetchMessages();
-            setInterval(fetchMessages, 2000); // Update every 2 seconds
+        // Poll for new messages every 2 seconds
+        setInterval(fetchMessages, 2000);
+
+        // Initial message load
+        fetchMessages();
+
+        // Handle form submission for sending messages
+        $('#chatForm').submit(function(e) {
+            e.preventDefault();
+            const message = $('#message').val().trim();
+            if (!message) {
+                alert('Please enter a message.');
+                return;
+            }
+            $.ajax({
+                url: 'save_chat.php',
+                method: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    const data = JSON.parse(response);
+                    if (data.success) {
+                        $('#message').val(''); // Clear input after successful send
+                        fetchMessages(); // Refresh messages
+                    } else {
+                        alert('Error: ' + (data.message || 'Failed to send message'));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error sending message:', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText,
+                        url: xhr.url
+                    });
+                    alert('Error sending message: ' + error + ' (Status: ' + status + ')');
+                }
+            });
         });
     </script>
 </body>

@@ -24,7 +24,8 @@ try {
     }
 
     $bookingStmt = $db->prepare("
-        SELECT eb.booking_id, eb.package_id, eb.event_type, eb.event_date, eb.event_time, eb.booking_status, eb.created_at, cp.category 
+        SELECT eb.booking_id, eb.package_id, eb.event_type, eb.event_date, eb.event_time, eb.booking_status, eb.created_at, 
+               cp.category, cp.price 
         FROM event_bookings eb 
         LEFT JOIN catering_packages cp ON eb.package_id = cp.package_id 
         WHERE eb.user_id = :user_id 
@@ -41,6 +42,9 @@ try {
 function formatCategory($category) {
     return str_replace('Catering', 'Party Catering', $category);
 }
+
+// Current date for comparison
+$currentDate = new DateTime();
 ?>
 
 <!DOCTYPE html>
@@ -80,6 +84,9 @@ function formatCategory($category) {
             right: -5px;
             font-size: 0.7rem;
             padding: 2px 5px;
+        }
+        .cancel-btn {
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -160,6 +167,11 @@ function formatCategory($category) {
                                 $chatStmt = $db->prepare("SELECT COUNT(*) as unread FROM chat_messages WHERE order_id = :booking_id AND sender = 'admin' AND created_at > (SELECT MAX(created_at) FROM chat_messages WHERE order_id = :booking_id AND sender = 'user')");
                                 $chatStmt->execute([':booking_id' => $booking['booking_id']]);
                                 $unreadCount = $chatStmt->fetch(PDO::FETCH_ASSOC)['unread'];
+
+                                // Check if cancellation is allowed
+                                $eventDate = new DateTime($booking['event_date']);
+                                $daysUntilEvent = $currentDate->diff($eventDate)->days;
+                                $canCancel = ($booking['booking_status'] === 'pending' && $daysUntilEvent >= 7);
                             ?>
                                 <div class="booking-card <?php echo htmlspecialchars(str_replace(' ', '-', strtolower($booking['category']))); ?>" data-type="<?php echo htmlspecialchars($booking['category']); ?>">
                                     <h5><?php echo htmlspecialchars($booking['event_type']); ?></h5>
@@ -167,6 +179,7 @@ function formatCategory($category) {
                                     <p><strong>Event Date:</strong> <?php echo date('F j, Y', strtotime($booking['event_date'])); ?></p>
                                     <p><strong>Event Time:</strong> <?php echo date('h:i A', strtotime($booking['event_time'])); ?></p>
                                     <p><strong>Booking Date:</strong> <?php echo date('F j, Y, h:i A', strtotime($booking['created_at'])); ?></p>
+                                    <p><strong>Price:</strong> <?php echo $booking['price'] !== null ? '₱' . number_format($booking['price'], 2) : 'N/A'; ?></p>
                                     <p>
                                         <strong>Status:</strong> 
                                         <span class="status <?php 
@@ -175,12 +188,19 @@ function formatCategory($category) {
                                             <?php echo ucfirst(htmlspecialchars($booking['booking_status'])); ?>
                                         </span>
                                     </p>
-                                    <a href="chat_user.php?booking_id=<?php echo $booking['booking_id']; ?>" class="btn btn-secondary btn-sm chat-btn">
-                                        <i class="fas fa-comments"></i> Chat
-                                        <?php if ($unreadCount > 0): ?>
-                                            <span class="badge bg-danger"><?php echo $unreadCount; ?></span>
-                                        <?php endif; ?>
-                                    </a>
+                                    <?php if ($booking['booking_status'] === 'approved'): ?>
+                                        <a href="chat_user.php?booking_id=<?php echo $booking['booking_id']; ?>" class="btn btn-secondary btn-sm chat-btn">
+                                            <i class="fas fa-comments"></i> Chat
+                                            <?php if ($unreadCount > 0): ?>
+                                                <span class="badge bg-danger"><?php echo $unreadCount; ?></span>
+                                            <?php endif; ?>
+                                        </a>
+                                    <?php endif; ?>
+                                    <?php if ($canCancel): ?>
+                                        <a href="cancel_booking.php?booking_id=<?php echo $booking['booking_id']; ?>" class="btn btn-danger btn-sm cancel-btn" onclick="return confirm('Are you sure you want to cancel this booking?');">
+                                            <i class="fas fa-times"></i> Cancel Booking
+                                        </a>
+                                    <?php endif; ?>
                                 </div>
                             <?php endforeach; ?>
                         <?php endif; ?>

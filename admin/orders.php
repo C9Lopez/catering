@@ -2,17 +2,20 @@
 require '../db.php';
 session_start();
 
+// Check if admin is logged in
 if (!isset($_SESSION['admin_id'])) {
     header("Location: ../auth/admin_login.php");
     exit();
 }
 
+// Handle filtering via GET parameters
 $filterStatus = isset($_GET['status']) ? trim($_GET['status']) : '';
 $filterCustomer = isset($_GET['customer']) ? trim($_GET['customer']) : '';
 $filterPackage = isset($_GET['package']) ? trim($_GET['package']) : '';
 $filterDate = isset($_GET['date']) ? trim($_GET['date']) : '';
 
-$sql = "SELECT eb.*, u.first_name, u.last_name, p.name as package_name, p.category as package_category 
+// Build the SQL query with filters
+$sql = "SELECT eb.*, u.first_name, u.last_name, p.name as package_name 
         FROM event_bookings eb 
         JOIN users u ON eb.user_id = u.user_id 
         JOIN catering_packages p ON eb.package_id = p.package_id 
@@ -41,21 +44,23 @@ try {
     $stmt->execute($params);
     $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
+    // Log error and display a minimal error message for admin
     error_log("Error fetching bookings: " . $e->getMessage());
-    $bookings = [];
+    $bookings = []; // Default to empty array if query fails
 }
 
+// Function to generate status badge class
 function getStatusClass($status) {
     switch ($status) {
-        case 'pending': return 'bg-warning text-dark';
-        case 'approved': return 'bg-success text-white';
-        case 'rejected': return 'bg-danger text-white';
-        default: return 'bg-secondary text-white';
+        case 'pending':
+            return 'bg-warning text-dark';
+        case 'approved':
+            return 'bg-success text-white';
+        case 'rejected':
+            return 'bg-danger text-white';
+        default:
+            return 'bg-secondary text-white';
     }
-}
-
-function formatCategory($category) {
-    return str_replace('Catering', 'Party Catering', $category);
 }
 ?>
 <!DOCTYPE html>
@@ -66,7 +71,7 @@ function formatCategory($category) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/admin.css" rel="stylesheet">
-    <link href="../css/booking.css" rel="stylesheet">
+    <link href="../css/booking.css" rel="stylesheet"> <!-- For blue/black theme -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         .filter-container {
@@ -100,22 +105,6 @@ function formatCategory($category) {
             font-size: 0.9rem;
             transition: all 0.3s ease;
         }
-        .category-badge {
-            font-size: 0.85rem;
-            padding: 4px 8px;
-            border-radius: 12px;
-            background-color: #e9ecef;
-        }
-        .chat-btn {
-            position: relative;
-        }
-        .chat-btn .badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            font-size: 0.7rem;
-            padding: 2px 5px;
-        }
         @media (max-width: 768px) {
             .filter-container .form-group {
                 margin-right: 0;
@@ -127,7 +116,7 @@ function formatCategory($category) {
             .filter-container button {
                 width: 100%;
             }
-            .status-btn, .btn-sm {
+            .status-btn {
                 padding: 3px 10px;
                 font-size: 0.8rem;
             }
@@ -146,6 +135,7 @@ function formatCategory($category) {
                     <h5 class="mb-0">Booking List</h5>
                 </div>
                 <div class="card-body">
+                    <!-- Filter Container -->
                     <div class="filter-container">
                         <form method="GET" class="row g-2">
                             <div class="col-md-3 col-12 form-group">
@@ -183,7 +173,6 @@ function formatCategory($category) {
                                     <th>Booking ID</th>
                                     <th>Customer</th>
                                     <th>Package</th>
-                                    <th>Category</th>
                                     <th>Number of Guests</th>
                                     <th>Status</th>
                                     <th>Chat</th>
@@ -193,24 +182,21 @@ function formatCategory($category) {
                             </thead>
                             <tbody>
                                 <?php
+                                // Display filtered bookings
                                 if (empty($bookings)) {
-                                    echo "<tr><td colspan='9' class='text-center text-muted'>No bookings found matching the filters.</td></tr>";
+                                    echo "<tr><td colspan='8' class='text-center text-muted'>No bookings found matching the filters.</td></tr>";
                                 } else {
-                                    foreach ($bookings as $row):
-                                        $chatStmt = $db->prepare("SELECT COUNT(*) as unread FROM chat_messages WHERE order_id = :booking_id AND sender = 'user' AND created_at > (SELECT IFNULL(MAX(created_at), '1970-01-01') FROM chat_messages WHERE order_id = :booking_id AND sender = 'admin')");
-                                        $chatStmt->execute([':booking_id' => $row['booking_id']]);
-                                        $unreadCount = $chatStmt->fetch(PDO::FETCH_ASSOC)['unread'];
-                                        ?>
+                                    foreach ($bookings as $row): ?>
                                         <tr>
                                             <td><?php echo htmlspecialchars($row['booking_id']); ?></td>
                                             <td><?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?></td>
                                             <td><?php echo htmlspecialchars($row['package_name']); ?></td>
-                                            <td><span class="category-badge"><?php echo htmlspecialchars(formatCategory($row['package_category'])); ?></span></td>
                                             <td><?php echo htmlspecialchars($row['number_of_guests'] ?? 'Not set'); ?></td>
                                             <td>
                                                 <form method="POST" action="update_booking_status.php" style="display: inline;">
                                                     <input type="hidden" name="booking_id" value="<?php echo $row['booking_id']; ?>">
-                                                    <select name="booking_status" class="status-btn <?php echo getStatusClass($row['booking_status']); ?>"
+                                                    <select name="booking_status" class="status-btn 
+                                                        <?php echo getStatusClass($row['booking_status']); ?>"
                                                         onchange="this.form.submit()">
                                                         <option value="pending" <?php echo $row['booking_status'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
                                                         <option value="approved" <?php echo $row['booking_status'] === 'approved' ? 'selected' : ''; ?>>Approved</option>
@@ -219,11 +205,8 @@ function formatCategory($category) {
                                                 </form>
                                             </td>
                                             <td>
-                                                <a href="chat.php?booking_id=<?php echo $row['booking_id']; ?>" class="btn btn-secondary btn-sm chat-btn">
+                                                <a href="chat.php?booking_id=<?php echo $row['booking_id']; ?>" class="btn btn-secondary btn-sm">
                                                     <i class="fas fa-comments"></i> Chat
-                                                    <?php if ($unreadCount > 0): ?>
-                                                        <span class="badge bg-danger"><?php echo $unreadCount; ?></span>
-                                                    <?php endif; ?>
                                                 </a>
                                             </td>
                                             <td>₱<?php echo number_format($row['total_amount'], 2); ?></td>
