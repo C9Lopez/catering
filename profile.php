@@ -23,6 +23,7 @@ try {
         $age = $today->diff($birthdate)->y;
     }
 
+    // Fetch all bookings (no status exclusion)
     $bookingStmt = $db->prepare("
         SELECT eb.booking_id, eb.package_id, eb.event_type, eb.event_date, eb.event_time, eb.booking_status, eb.created_at, 
                cp.category, cp.price 
@@ -88,6 +89,13 @@ $currentDate = new DateTime();
         .cancel-btn {
             margin-top: 10px;
         }
+        .status-filter-btn {
+            margin: 0 5px;
+        }
+        .status-filter-btn.active {
+            font-weight: bold;
+            border-bottom: 2px solid #007bff;
+        }
     </style>
 </head>
 <body class="light-theme">
@@ -98,9 +106,9 @@ $currentDate = new DateTime();
         <div class="container">
             <div class="text-center wow bounceInUp" data-wow-delay="0.1s">
                 <h1 class="display-5 mb-5" style="font-family: 'Playball', cursive;">Welcome Back, <?php echo htmlspecialchars($user['first_name']); ?>!</h1>
-                <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#updateProfileModal">
+                <button type="button" class="btn btn-primary mt-3 me-2" data-bs-toggle="modal" data-bs-target="#updateProfileModal">
                     <i class="fas fa-edit me-2"></i> Update Profile
-                </button>
+                
             </div>
             <div class="row justify-content-center">
                 <div class="col-12 col-md-8 col-lg-6">
@@ -149,12 +157,20 @@ $currentDate = new DateTime();
                 <p class="fs-5 text-muted">Check the status of your recent catering bookings</p>
             </div>
             <div class="text-center mb-4">
-                <button class="btn filter-btn me-2" data-filter="all">All</button>
+                <button class="btn filter-btn me-2" data-filter="all">All Categories</button>
                 <button class="btn filter-btn me-2" data-filter="Wedding Catering">Wedding</button>
                 <button class="btn filter-btn me-2" data-filter="Debut Catering">Debut</button>
                 <button class="btn filter-btn me-2" data-filter="Corporate Catering">Corporate</button>
                 <button class="btn filter-btn me-2" data-filter="Childrens Party Catering">Children’s</button>
                 <button class="btn filter-btn" data-filter="Private Catering">Private</button>
+            </div>
+            <div class="text-center mb-4">
+                <button class="btn status-filter-btn me-2" data-status-filter="all">All Statuses</button>
+                <button class="btn status-filter-btn me-2" data-status-filter="pending">Pending</button>
+                <button class="btn status-filter-btn me-2" data-status-filter="approved">Approved</button>
+                <button class="btn status-filter-btn me-2" data-status-filter="rejected">Rejected</button>
+                <button class="btn status-filter-btn me-2" data-status-filter="cancelled">Cancelled</button>
+                <button class="btn status-filter-btn me-2" data-status-filter="completed">Completed</button>
             </div>
             <div class="row justify-content-center">
                 <div class="col-12 col-md-8 col-lg-8">
@@ -173,7 +189,9 @@ $currentDate = new DateTime();
                                 $daysUntilEvent = $currentDate->diff($eventDate)->days;
                                 $canCancel = ($booking['booking_status'] === 'pending' && $daysUntilEvent >= 7);
                             ?>
-                                <div class="booking-card <?php echo htmlspecialchars(str_replace(' ', '-', strtolower($booking['category']))); ?>" data-type="<?php echo htmlspecialchars($booking['category']); ?>">
+                                <div class="booking-card <?php echo htmlspecialchars(str_replace(' ', '-', strtolower($booking['category']))); ?>" 
+                                     data-type="<?php echo htmlspecialchars($booking['category']); ?>" 
+                                     data-status="<?php echo htmlspecialchars($booking['booking_status']); ?>">
                                     <h5><?php echo htmlspecialchars($booking['event_type']); ?></h5>
                                     <div class="category-badge"><?php echo htmlspecialchars(formatCategory($booking['category'])); ?></div>
                                     <p><strong>Event Date:</strong> <?php echo date('F j, Y', strtotime($booking['event_date'])); ?></p>
@@ -184,7 +202,9 @@ $currentDate = new DateTime();
                                         <strong>Status:</strong> 
                                         <span class="status <?php 
                                             echo $booking['booking_status'] === 'approved' ? 'status-approved' : 
-                                                ($booking['booking_status'] === 'pending' ? 'status-pending' : 'status-rejected'); ?>">
+                                                ($booking['booking_status'] === 'pending' ? 'status-pending' : 
+                                                ($booking['booking_status'] === 'completed' ? 'status-completed' : 
+                                                ($booking['booking_status'] === 'cancelled' ? 'status-cancelled' : 'status-rejected'))); ?>">
                                             <?php echo ucfirst(htmlspecialchars($booking['booking_status'])); ?>
                                         </span>
                                     </p>
@@ -294,26 +314,44 @@ $currentDate = new DateTime();
             reader.readAsDataURL(event.target.files[0]);
         }
 
+        // Category filter
         document.querySelectorAll('.filter-btn').forEach(button => {
             button.addEventListener('click', function() {
-                const filter = this.getAttribute('data-filter').toLowerCase().trim();
-                const cards = document.querySelectorAll('.booking-card');
-                
-                cards.forEach(card => {
-                    const cardType = card.getAttribute('data-type').toLowerCase().trim();
-                    if (filter === 'all' || cardType === filter) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-
+                const categoryFilter = this.getAttribute('data-filter').toLowerCase().trim();
+                applyFilters(categoryFilter, null);
                 document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
             });
         });
 
+        // Status filter
+        document.querySelectorAll('.status-filter-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const statusFilter = this.getAttribute('data-status-filter').toLowerCase().trim();
+                const activeCategory = document.querySelector('.filter-btn.active')?.getAttribute('data-filter').toLowerCase().trim() || 'all';
+                applyFilters(activeCategory, statusFilter);
+                document.querySelectorAll('.status-filter-btn').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Combined filter function
+        function applyFilters(categoryFilter, statusFilter) {
+            const cards = document.querySelectorAll('.booking-card');
+            cards.forEach(card => {
+                const cardCategory = card.getAttribute('data-type').toLowerCase().trim();
+                const cardStatus = card.getAttribute('data-status').toLowerCase().trim();
+                
+                const categoryMatch = (categoryFilter === 'all' || cardCategory === categoryFilter);
+                const statusMatch = (statusFilter === null || statusFilter === 'all' || cardStatus === statusFilter);
+                
+                card.style.display = (categoryMatch && statusMatch) ? 'block' : 'none';
+            });
+        }
+
+        // Initialize with "All" category and "All" status
         document.querySelector('.filter-btn[data-filter="all"]').click();
+        document.querySelector('.status-filter-btn[data-status-filter="all"]').click();
     </script>
 </body>
 </html>

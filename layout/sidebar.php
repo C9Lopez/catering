@@ -42,7 +42,7 @@ function isActive($pages) {
         <li class="nav-item">
             <a href="../admin/orders.php" class="nav-link<?= isActive('orders.php') ?>">
                 <i class="fas fa-shopping-cart me-2"></i>
-                <span>Orders</span>
+                <span>Bookings</span>
             </a>
         </li>
         <li class="nav-item">

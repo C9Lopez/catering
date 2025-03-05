@@ -38,7 +38,7 @@ try {
 
     // Check cancellation conditions
     if ($booking['booking_status'] !== 'pending') {
-        echo "<script>alert('Only pending bookings can be canceled.'); window.location.href='profile.php';</script>";
+        echo "<script>alert('Only pending bookings can be cancelled.'); window.location.href='profile.php';</script>";
         exit;
     }
 
@@ -47,19 +47,19 @@ try {
         exit;
     }
 
-    // Update booking status to 'canceled'
+    // Update booking status to 'cancelled' (double 'l')
     $updateStmt = $db->prepare("
         UPDATE event_bookings 
-        SET booking_status = 'canceled', updated_at = NOW() 
+        SET booking_status = 'cancelled', updated_at = NOW() 
         WHERE booking_id = :booking_id AND user_id = :user_id
     ");
     $updateStmt->bindParam(':booking_id', $bookingId, PDO::PARAM_INT);
     $updateStmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
     $updateStmt->execute();
 
-    echo "<script>alert('Booking successfully canceled.'); window.location.href='profile.php';</script>";
+    echo "<script>alert('Booking successfully cancelled.'); window.location.href='profile.php';</script>";
 
 } catch (PDOException $e) {
-    echo "<script>alert('Error canceling booking: " . $e->getMessage() . "'); window.location.href='profile.php';</script>";
+    echo "<script>alert('Error cancelling booking: " . $e->getMessage() . "'); window.location.href='profile.php';</script>";
 }
 ?>

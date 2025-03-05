@@ -4,11 +4,17 @@ require '../db.php';
 
 // Fetch occupied dates for calendar
 try {
-    $stmt = $db->prepare("SELECT event_date FROM event_bookings WHERE booking_status = 'Approved'");
+    // Use lowercase 'approved' to match typical database convention
+    $stmt = $db->prepare("SELECT event_date FROM event_bookings WHERE booking_status = 'approved'");
     $stmt->execute();
     $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $occupiedDates = array_column($bookings, 'event_date');
+    // Ensure dates are in 'YYYY-MM-DD' format for FullCalendar
+    $occupiedDates = array_map(function($date) {
+        return date('Y-m-d', strtotime($date));
+    }, $occupiedDates);
 } catch (PDOException $e) {
+    error_log("Error fetching occupied dates: " . $e->getMessage());
     $occupiedDates = [];
 }
 
@@ -92,7 +98,7 @@ try {
                 <div class="col-lg-6">
                     <h1 class="display-5 mb-4">Wedding Catering Excellence</h1>
                     <p class="mb-4">
-                        At Pochie Catering, we understand that your wedding day is one of the most important days of your life.
+                        At CONVERT Catering, we understand that your wedding day is one of the most important days of your life.
                         Our wedding catering service is designed to provide an unforgettable culinary experience for you and your guests.
                     </p>
                     <div class="row g-4">
@@ -230,10 +236,10 @@ try {
                 if (!calendarInitialized) {
                     var calendarEl = document.getElementById('calendar');
                     const now = new Date();
-                    const philippineTimeOffset = 8 * 60;
+                    const philippineTimeOffset = 8 * 60; // UTC+8 for Philippines
                     const localOffset = now.getTimezoneOffset();
                     const philippineTime = new Date(now.getTime() + (philippineTimeOffset + localOffset) * 60 * 1000);
-                    const today = new Date(philippineTime.toISOString().split('T')[0]);
+                    const today = philippineTime.toISOString().split('T')[0]; // YYYY-MM-DD format
 
                     var calendar = new FullCalendar.Calendar(calendarEl, {
                         initialView: 'dayGridMonth',
@@ -252,23 +258,28 @@ try {
                             selectable: false
                         })),
                         dateClick: function(info) {
-                            if (new Date(info.dateStr) < today) {
+                            const selectedDate = info.dateStr;
+                            const todayDate = new Date(today);
+                            const clickedDate = new Date(selectedDate);
+
+                            if (clickedDate < todayDate.setHours(0, 0, 0, 0)) {
                                 alert('You cannot book a past date. Please select a future date.');
                                 return;
                             }
-                            if (occupiedDates.includes(info.dateStr)) {
+                            if (occupiedDates.includes(selectedDate)) {
                                 alert('This date is already occupied. Please choose another date.');
                                 return;
                             }
-                            document.getElementById('eventDate').value = info.dateStr;
+                            document.getElementById('eventDate').value = selectedDate;
                             calendar.getEvents().forEach(event => {
                                 if (event.title === 'Selected') event.remove();
                             });
                             calendar.addEvent({
                                 title: 'Selected',
-                                start: info.dateStr,
+                                start: selectedDate,
                                 allDay: true,
-                                color: '#28a745'
+                                backgroundColor: '#28a745',
+                                borderColor: '#28a745'
                             });
                         }
                     });
