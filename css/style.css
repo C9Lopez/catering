@@ -323,7 +323,7 @@ h4, h5, h6, .h4, .h5, .h6 {
 
 
 /*** testimonial Start ***/
-.testimonial-item {
+/* .testimonial-item {
     border: 1px solid var(--bs-primary);
     padding: 20px 20px;
 }
@@ -335,7 +335,7 @@ h4, h5, h6, .h4, .h5, .h6 {
 
 .testimonial-carousel.owl-rtl .testimonial-item {
     direction: ltr !important;
-}
+} */
 /*** testimonial End ***/
 
 

@@ -13,11 +13,18 @@ function isActive($pages) {
 }
 ?>
 <!-- Sidebar Start -->
-<div class="sidebar">
+<div class="mobile-header debug-header">
+    <button class="sidebar-toggle" id="sidebarToggle" aria-expanded="false" aria-controls="sidebar">
+        <i class="fas fa-bars"></i>
+    </button>
+    <h3 class="mobile-header-title"><?php echo basename($_SERVER['PHP_SELF'], '.php') === 'index' ? 'Admin Dashboard' : ucfirst(basename($_SERVER['PHP_SELF'], '.php')); ?></h3>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <h3>Catering Admin</h3>
-        <button class="sidebar-toggle d-lg-none" type="button">
-            <i class="fas fa-bars"></i>
+        <button class="sidebar-close d-lg-none" type="button" id="sidebarClose" aria-label="Close Sidebar">
+            <i class="fas fa-times"></i>
         </button>
     </div>
     <ul class="list-unstyled components">

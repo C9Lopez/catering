@@ -10,10 +10,12 @@ if (isset($_GET['booking_id'])) {
 
 try {
     $stmt = $db->prepare("
-        SELECT eb.*, u.first_name, u.last_name, p.name AS package_name, p.category AS package_category 
-        FROM event_bookings eb 
-        JOIN users u ON eb.user_id = u.user_id 
-        JOIN catering_packages p ON eb.package_id = p.package_id 
+        SELECT eb.booking_id, eb.location, eb.event_date, eb.event_time, eb.setup_time, eb.number_of_guests, eb.total_amount, eb.booking_status,
+               cp.name AS package_name, cp.category AS package_category,
+               u.first_name, u.middle_name, u.last_name, u.birthdate, u.gender, u.address, u.contact_no, u.email
+        FROM event_bookings eb
+        LEFT JOIN catering_packages cp ON eb.package_id = cp.package_id
+        LEFT JOIN users u ON eb.user_id = u.user_id
         $whereClause
     ");
     $stmt->execute($params);
@@ -23,15 +25,42 @@ try {
         echo "<tr><td colspan='10' class='text-center text-muted'>No pending bookings found.</td></tr>";
     } else {
         foreach ($bookings as $row) {
-            $desc = "Date: " . htmlspecialchars($row['event_date']) . " | Time: " . htmlspecialchars($row['event_time']) . 
-                    " | Setup: " . htmlspecialchars($row['setup_time']) . " | Location: " . htmlspecialchars($row['location']);
+            // Main row content
+            $descContent = "Date: " . htmlspecialchars($row['event_date']) . " | Time: " . htmlspecialchars($row['event_time']) . 
+                           " | Setup: " . htmlspecialchars($row['setup_time']) . " | Location: " . htmlspecialchars($row['location']);
+            $customerName = htmlspecialchars($row['first_name'] . ' ' . $row['last_name']);
+
+            // Expanded row content
+            $detailsContent = "
+                <div class='details-content'>
+                    <div>
+                        <h6>Customer Details</h6>
+                        <p><strong>Name:</strong> " . htmlspecialchars($row['first_name'] . ' ' . $row['middle_name'] . ' ' . $row['last_name']) . "</p>
+                        <p><strong>Birthdate:</strong> " . htmlspecialchars($row['birthdate']) . "</p>
+                        <p><strong>Gender:</strong> " . htmlspecialchars($row['gender']) . "</p>
+                        <p><strong>Address:</strong> " . htmlspecialchars($row['address']) . "</p>
+                        <p><strong>Contact:</strong> " . htmlspecialchars($row['contact_no']) . "</p>
+                        <p><strong>Email:</strong> " . htmlspecialchars($row['email']) . "</p>
+                    </div>
+                    <div>
+                        <h6>Event Description</h6>
+                        <p><strong>Date:</strong> " . htmlspecialchars($row['event_date']) . "</p>
+                        <p><strong>Time:</strong> " . htmlspecialchars($row['event_time']) . "</p>
+                        <p><strong>Setup Time:</strong> " . htmlspecialchars($row['setup_time']) . "</p>
+                        <p><strong>Location:</strong> " . htmlspecialchars($row['location']) . "</p>
+                    </div>
+                </div>
+            ";
+
+            // Main row
             echo "<tr>
+                <td><i class='fas fa-chevron-down expand-btn'></i></td>
                 <td>" . htmlspecialchars($row['booking_id']) . "</td>
-                <td>" . htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) . "</td>
+                <td class='customer-col'>" . $customerName . "</td>
                 <td>" . htmlspecialchars($row['package_name']) . "</td>
                 <td>" . htmlspecialchars($row['package_category']) . "</td>
                 <td>" . htmlspecialchars($row['number_of_guests'] ?? 'N/A') . "</td>
-                <td class='description-col'>$desc</td>
+                <td class='description-col'>" . $descContent . "</td>
                 <td><form class='status-form' data-id='{$row['booking_id']}'>
                     <input type='hidden' name='booking_id' value='{$row['booking_id']}'>
                     <select name='booking_status' class='status-btn " . getStatusClass($row['booking_status']) . "' onchange='updateStatus(event, this)'>
@@ -47,6 +76,11 @@ try {
                     <a href='view_order.php?id={$row['booking_id']}' class='btn btn-info btn-sm'><i class='fas fa-eye'></i></a>
                     <a href='update_booking.php?id={$row['booking_id']}' class='btn btn-primary btn-sm'><i class='fas fa-edit'></i></a>
                 </td>
+            </tr>";
+
+            // Details row (hidden by default)
+            echo "<tr class='details-row'>
+                <td colspan='10'>" . $detailsContent . "</td>
             </tr>";
         }
     }

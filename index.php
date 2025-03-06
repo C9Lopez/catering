@@ -149,7 +149,7 @@ try {
 <!-- Announcement Section End -->
 
  <!-- Testimonial Start -->
- <div class="container-fluid py-6">
+ <!-- <div class="container-fluid py-6">
             <div class="container">
                 <div class="text-center wow bounceInUp" data-wow-delay="0.1s">
                     <small class="d-inline-block fw-bold text-dark text-uppercase bg-light border border-primary rounded-pill px-4 py-1 mb-3">Testimonial</small>
@@ -336,7 +336,7 @@ try {
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
         <!-- Testimonial End -->
 
 <?php include 'layout/footer.php'; ?>

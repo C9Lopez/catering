@@ -10,6 +10,7 @@
     color: #fff;
     transition: transform 0.3s ease;
     z-index: 1000;
+    overflow-y: auto;
 }
 
 .sidebar-header {
@@ -20,8 +21,37 @@
     align-items: center;
 }
 
-.sidebar-toggle {
-    display: none;
+/* Mobile Header for Toggle Button */
+body .mobile-header {
+    display: none; /* Hidden by default on desktop */
+    background: #007bff; /* Blue background */
+    padding: 10px 15px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1002; /* Above sidebar and overlay */
+    align-items: center;
+    justify-content: space-between;
+}
+
+body .mobile-header-title {
+    color: #fff;
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+body .sidebar-toggle {
+    background: transparent; /* Remove background to blend into header */
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 1003; /* Ensure it’s above the header */
+}
+
+body .sidebar-close {
+    display: none; /* Hidden by default on desktop */
     background: none;
     border: none;
     color: #fff;
@@ -65,22 +95,51 @@
     padding: 20px;
 }
 
+/* Sidebar Overlay for Mobile */
+body .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1001; /* Above content but below header */
+    display: none;
+}
+
+body .sidebar-overlay.active {
+    display: block;
+}
+
 /* Responsive Styles */
 @media (max-width: 991.98px) {
-    .sidebar {
+    body .sidebar {
         transform: translateX(-100%);
     }
     
-    .sidebar.active {
+    body .sidebar.active {
         transform: translateX(0);
     }
     
-    .sidebar-toggle {
-        display: block;
+    body .mobile-header {
+        display: flex !important; /* Ensure visibility on mobile */
+    }
+
+    body .sidebar-toggle {
+        display: block !important; /* Ensure visibility */
+    }
+
+    body .sidebar-close {
+        display: block !important; /* Show close button on mobile */
     }
     
-    .main-content {
+    body .main-content {
         margin-left: 0;
+        padding-top: 60px; /* Adjust for header height */
+    }
+
+    body .main-content h1 {
+        display: none; /* Hide the main h1 title on mobile since it’s in the header */
     }
 }
 
@@ -102,7 +161,7 @@
     color: #007bff;
 }
 
-/* Responsive Adjustments */
+/* Responsive Adjustments for Dashboard Cards */
 @media (max-width: 992px) {
     .dashboard-card {
         margin-bottom: 15px;

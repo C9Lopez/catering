@@ -34,15 +34,11 @@ function getStatusClass($status) {
     <title>Orders Management - Catering Admin</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <!-- Custom CSS -->
     <link href="../css/admin.css" rel="stylesheet">
     <style>
         body { background: #f4f7fa; font-family: 'Segoe UI', sans-serif; }
-        .main-content { padding: 20px; }
         .card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 30px; }
         .card-header { color: white; border-radius: 12px 12px 0 0; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
         .pending-card-header { background: #007bff; }
@@ -52,12 +48,115 @@ function getStatusClass($status) {
         .cancelled-card-header { background: #dc3545; }
         .status-counts { margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; }
         .status-counts .badge { font-size: 1rem; padding: 8px 15px; }
-        .table { background: white; border-radius: 10px; overflow: hidden; }
-        .table th { background: #007bff; color: white; padding: 12px; }
-        .table td { padding: 12px; vertical-align: middle; font-size: 0.9rem; }
+        .table { background: white; border-radius: 10px; margin-bottom: 0; }
+        .table th { background: #007bff; color: white; padding: 12px; text-align: center; }
+        .table td { padding: 12px; vertical-align: middle; font-size: 0.9rem; text-align: center; }
         .status-btn { padding: 6px 15px; border-radius: 20px; font-size: 0.85rem; border: none; cursor: pointer; }
-        .description-col { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .description-col:hover { white-space: normal; overflow: visible; }
+        .description-col, .customer-col {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            position: relative;
+            cursor: pointer;
+        }
+        /* Tooltip-like popup for description on hover (desktop) */
+        .description-col:hover .description-tooltip {
+            display: block;
+        }
+        .description-tooltip {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            z-index: 1000;
+            white-space: normal;
+            font-size: 0.85rem;
+            max-width: 300px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        /* Description toggle for mobile */
+        .description-expanded {
+            display: none;
+            background: #f8f9fa;
+            padding: 10px;
+            font-size: 0.9rem;
+            text-align: left;
+            border-top: 1px solid #dee2e6;
+        }
+        .description-expanded.active {
+            display: block;
+        }
+        .table-responsive {
+            position: relative;
+        }
+        .expand-btn {
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .expand-btn.expanded {
+            transform: rotate(180deg);
+        }
+        .details-row {
+            display: none;
+            background-color: #f8f9fa;
+        }
+        .details-row td {
+            padding: 15px;
+            border-top: none;
+        }
+        .details-content {
+            display: flex;
+            gap: 20px;
+        }
+        .details-content div {
+            flex: 1;
+        }
+        .details-content h6 {
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+        .details-content p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+        /* Responsive adjustments */
+        @media (max-width: 991.98px) {
+            .table th, .table td {
+                font-size: 0.85rem;
+                padding: 8px;
+            }
+            .description-col {
+                max-width: 150px;
+            }
+            .customer-col {
+                max-width: 120px;
+            }
+            /* Disable hover on mobile, enable click */
+            .description-col:hover .description-tooltip {
+                display: none;
+            }
+        }
+        @media (max-width: 576px) {
+            .table th, .table td {
+                font-size: 0.8rem;
+                padding: 6px;
+            }
+            .description-col {
+                max-width: 100px;
+            }
+            .customer-col {
+                max-width: 100px;
+            }
+            .details-content {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body class="admin-dashboard">
@@ -76,14 +175,13 @@ function getStatusClass($status) {
             <!-- Cards -->
             <?php
             $cards = [
-                'pending' => ['Pending Bookings', 'pending-card-header', true, true],
-                'approved' => ['Approved Bookings', 'approved-card-header', true, false],
-                'rejected' => ['Rejected Bookings', 'rejected-card-header', false, false],
-                'completed' => ['Completed Bookings', 'completed-card-header', false, false],
-                'cancelled' => ['Cancelled Bookings', 'cancelled-card-header', false, false]
+                'pending' => ['Pending Bookings', 'pending-card-header'],
+                'approved' => ['Approved Bookings', 'approved-card-header'],
+                'rejected' => ['Rejected Bookings', 'rejected-card-header'],
+                'completed' => ['Completed Bookings', 'completed-card-header'],
+                'cancelled' => ['Cancelled Bookings', 'cancelled-card-header']
             ];
-            foreach ($cards as $status => [$title, $headerClass, $hasChat, $hasActions]) {
-                $colspan = $hasChat ? ($hasActions ? 10 : 9) : 8;
+            foreach ($cards as $status => [$title, $headerClass]) {
                 echo "
                 <div class='card'>
                     <div class='card-header $headerClass'>
@@ -97,8 +195,17 @@ function getStatusClass($status) {
                             <table class='table table-striped' id='{$status}BookingsTable'>
                                 <thead>
                                     <tr>
-                                        <th>ID</th><th>Customer</th><th>Package</th><th>Category</th><th>Guests</th>
-                                        <th>Description</th><th>Status</th>" . ($hasChat ? "<th>Chat</th>" : "") . "<th>Amount</th>" . ($hasActions ? "<th>Actions</th>" : "") . "
+                                        <th></th> <!-- Expand/Collapse Column -->
+                                        <th>ID</th>
+                                        <th>Customer</th>
+                                        <th>Package</th>
+                                        <th>Category</th>
+                                        <th>Guests</th>
+                                        <th>Description</th>
+                                        <th>Status</th>
+                                        <th>Chat</th>
+                                        <th>Amount</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id='{$status}BookingsBody'></tbody>
@@ -113,6 +220,7 @@ function getStatusClass($status) {
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/admin.js"></script>
     <script>
         const statusMap = {
             'pending': '#pendingBookingsBody',
@@ -122,9 +230,28 @@ function getStatusClass($status) {
             'cancelled': '#cancelledBookingsBody'
         };
 
+        $(document).on('click', '.expand-btn', function() {
+            const $btn = $(this);
+            const $row = $btn.closest('tr');
+            const $detailsRow = $row.next('.details-row');
+
+            $btn.toggleClass('expanded');
+            $detailsRow.slideToggle(300);
+        });
+
+        // Handle hover/click for description column
+        $(document).on('click', '.description-col', function(e) {
+            // Only toggle on mobile (screen width <= 991.98px)
+            if (window.innerWidth <= 991.98) {
+                const $row = $(this).closest('tr');
+                const $descriptionExpanded = $row.next('.description-expanded');
+                $descriptionExpanded.toggleClass('active');
+            }
+        });
+
         function exportTableToCSV(filename, tableId) {
             const table = document.getElementById(tableId);
-            const rows = table.querySelectorAll("tr");
+            const rows = table.querySelectorAll("tr:not(.details-row):not(.description-expanded)");
             let csv = ["\ufeff"];
             rows.forEach(row => {
                 const cols = Array.from(row.querySelectorAll("td, th")).map(col => 
@@ -174,6 +301,8 @@ function getStatusClass($status) {
 
         function moveBookingRow(bookingId, newStatus, row) {
             $(row).fadeOut(200, function() {
+                $(this).next('.details-row').remove();
+                $(this).next('.description-expanded').remove();
                 $(this).remove();
                 $.ajax({
                     url: `fetch_${newStatus}_bookings.php`,
