@@ -10,6 +10,9 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+$user_id = $_SESSION['user_id'];
+
+
 try {
     $stmt = $db->prepare("SELECT user_id, first_name, middle_name, last_name, email, profile_picture, address, contact_no, birthdate, gender FROM users WHERE user_id = :user_id");
     $stmt->bindParam(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
@@ -179,9 +182,13 @@ $currentDate = new DateTime();
                             <p class="text-center text-muted">No recent bookings found.</p>
                         <?php else: ?>
                             <?php foreach ($allBookings as $booking): 
+
                                 // Fetch unread message count for this booking (from admin)
-                                $chatStmt = $db->prepare("SELECT COUNT(*) as unread FROM chat_messages WHERE order_id = :booking_id AND sender = 'admin' AND created_at > (SELECT MAX(created_at) FROM chat_messages WHERE order_id = :booking_id AND sender = 'user')");
-                                $chatStmt->execute([':booking_id' => $booking['booking_id']]);
+                                $chatStmt = $db->prepare("SELECT COUNT(*) as unread FROM chat_messages WHERE order_id =  :booking_id  AND user_id =  :user_id AND is_unread != 0");
+                                $chatStmt->execute([
+                                    ':booking_id' => $booking['booking_id'],
+                                    ':user_id' => $user_id
+                                ]);
                                 $unreadCount = $chatStmt->fetch(PDO::FETCH_ASSOC)['unread'];
 
                                 // Check if cancellation is allowed
@@ -211,7 +218,7 @@ $currentDate = new DateTime();
                                     <?php if ($booking['booking_status'] === 'approved'): ?>
                                         <a href="chat_user.php?booking_id=<?php echo $booking['booking_id']; ?>" class="btn btn-secondary btn-sm chat-btn">
                                             <i class="fas fa-comments"></i> Chat
-                                            <?php if ($unreadCount > 0): ?>
+                                            <?php if ($unreadCount != 0): ?>
                                                 <span class="badge bg-danger"><?php echo $unreadCount; ?></span>
                                             <?php endif; ?>
                                         </a>

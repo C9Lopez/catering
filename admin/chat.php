@@ -18,6 +18,12 @@ if ($booking_id <= 0) {
     die("Invalid booking ID. Please provide a valid booking ID.");
 }
 
+
+$chatStmt = $db->prepare("UPDATE chat_messages SET is_unread = 0 WHERE order_id =  :booking_id");
+$chatStmt->execute([
+    ':booking_id' => $booking_id
+]);
+
 try {
     // Fetch booking and user details for the chat, including user’s full name
     $stmt = $db->prepare("SELECT u.first_name, u.last_name, u.user_id, eb.event_type 
@@ -27,7 +33,7 @@ try {
     $stmt->bindParam(':booking_id', $booking_id, PDO::PARAM_INT);
     $stmt->execute();
     $booking = $stmt->fetch(PDO::FETCH_ASSOC);
-
+    $user_id = $booking['user_id'];
     if (!$booking) {
         die("Booking not found. Please check the booking ID or contact support.");
     }
@@ -207,6 +213,7 @@ try {
                     
                     <form id="chatForm" method="POST" action="save_chat.php">
                         <input type="hidden" name="booking_id" value="<?php echo $booking_id; ?>">
+                        <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
                         <input type="hidden" name="sender" value="admin">
                         <div class="chat-input">
                             <input type="text" id="message" name="message" class="form-control" placeholder="Type a message..." required>

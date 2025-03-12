@@ -14,12 +14,20 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+$user_id = $_SESSION['user_id'];
 // Get booking ID from URL and validate
 $booking_id = isset($_GET['booking_id']) ? (int)$_GET['booking_id'] : 0;
 
 if ($booking_id <= 0) {
     die("Invalid booking ID.");
 }
+
+$chatStmt = $db->prepare("UPDATE chat_messages SET is_unread = 0 WHERE order_id =  :booking_id  AND user_id =  :user_id");
+$chatStmt->execute([
+    ':booking_id' => $booking_id,
+    ':user_id' => $user_id
+]);
+
 
 try {
     // Fetch user's full name for later use on admin side
@@ -165,6 +173,7 @@ try {
                     
                     <form id="chatForm" method="POST" action="admin/save_chat.php">
                         <input type="hidden" name="booking_id" value="<?php echo $booking_id; ?>">
+                        <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
                         <input type="hidden" name="sender" value="user">
                         <div class="chat-input">
                             <input type="text" id="message" name="message" class="form-control" placeholder="Type a message..." required>
