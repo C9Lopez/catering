@@ -38,7 +38,7 @@ if (!isset($_SESSION['admin_id'])) {
                                     <th>Email</th>
                                     <th>Phone</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
+                                    
                                 </tr>
                             </thead>
                             <tbody>
@@ -57,14 +57,8 @@ if (!isset($_SESSION['admin_id'])) {
                                                 <?php echo ucfirst($row['status']); ?>
                                             </span>
                                         </td>
-                                        <td>
-                                            <a href="view_user.php?id=<?php echo $row['user_id']; ?>" class="btn btn-info btn-sm">
-                                                <i class="fas fa-eye"></i> View
-                                            </a>
-                                            <a href="edit_user.php?id=<?php echo $row['user_id']; ?>" class="btn btn-primary btn-sm">
-                                                <i class="fas fa-edit"></i> Edit
-                                            </a>
-                                        </td>
+                                        
+                                        
                                     </tr>
                                 <?php endwhile; ?>
                             </tbody>

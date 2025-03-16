@@ -92,7 +92,7 @@ try {
     </style>
 </head>
 <body class="admin-dashboard">
-    <?php include '../layout/sidebar.php'; ?>
+<?php include '../layout/sidebar.php'; ?>
     
     <div class="main-content">
         <div class="container-fluid">
