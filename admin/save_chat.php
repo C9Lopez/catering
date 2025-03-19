@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 // Validate and sanitize input data
 $booking_id = isset($_POST['booking_id']) ? (int)$_POST['booking_id'] : 0;
+$user_id = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
 $sender = isset($_POST['sender']) ? htmlspecialchars(trim($_POST['sender'])) : '';
 $message = isset($_POST['message']) ? htmlspecialchars(trim($_POST['message'])) : '';
 
@@ -36,8 +37,9 @@ if (!in_array($sender, ['user', 'admin'])) {
 
 try {
     // Prepare and execute INSERT query to save the chat message
-    $stmt = $db->prepare("INSERT INTO chat_messages (order_id, sender, message) VALUES (:booking_id, :sender, :message)");
+    $stmt = $db->prepare("INSERT INTO chat_messages (order_id,user_id, sender, message) VALUES (:booking_id, :user_id, :sender, :message)");
     $stmt->bindParam(':booking_id', $booking_id, PDO::PARAM_INT);
+    $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
     $stmt->bindParam(':sender', $sender, PDO::PARAM_STR);
     $stmt->bindParam(':message', $message, PDO::PARAM_STR);
     $stmt->execute();

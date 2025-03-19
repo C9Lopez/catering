@@ -187,10 +187,7 @@ try {
                                 <label class="form-label">Event Time</label>
                                 <input type="time" class="form-control" name="event_time" required>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Setup Time</label>
-                                <input type="time" class="form-control" name="setup_time" required>
-                            </div>
+                            
                             <div class="col-12">
                                 <label class="form-label">Location</label>
                                 <input type="text" class="form-control" name="location" required>

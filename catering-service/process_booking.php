@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $event_type = $_POST['event_type'];
     $event_date = $_POST['event_date'];
     $event_time = $_POST['event_time'];
-    $setup_time = $_POST['setup_time'];
+    
     $number_of_guests = $_POST['number_of_guests'];
     $location = $_POST['location'];
     $total_amount = floatval(str_replace(',', '', $_POST['total_amount'])); // Remove commas and ensure numeric
@@ -26,12 +26,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Prepare and execute the SQL statement
         $stmt = $db->prepare("
             INSERT INTO event_bookings (
-                user_id, package_id, location, event_type, event_date, event_time, setup_time, 
+                user_id, package_id, location, event_type, event_date, event_time, 
                 number_of_guests, total_amount, payment_status, booking_status, additional_requests, special_requirements
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', ?, ?)
         ");
         $stmt->execute([
-            $user_id, $package_id, $location, $event_type, $event_date, $event_time, $setup_time,
+            $user_id, $package_id, $location, $event_type, $event_date, $event_time,
             $number_of_guests, $total_amount, $additional_requests, $special_requirements
         ]);
 

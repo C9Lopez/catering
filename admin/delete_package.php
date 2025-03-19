@@ -2,36 +2,53 @@
 require '../db.php';
 session_start();
 
-// Check if admin is logged in
+header('Content-Type: application/json');
+
+$response = ['success' => false, 'message' => ''];
+
 if (!isset($_SESSION['admin_id'])) {
-    header("Location: ../auth/admin_login.php");
+    $response['message'] = 'Unauthorized access';
+    echo json_encode($response);
     exit();
 }
 
-// Check if package ID is provided
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    $_SESSION['error'] = "Invalid package ID";
-    header("Location: packages.php");
+if (!isset($_POST['id']) || !is_numeric($_POST['id'])) {
+    $response['message'] = 'Invalid package ID';
+    echo json_encode($response);
     exit();
 }
 
-$package_id = $_GET['id'];
+$package_id = $_POST['id'];
 
 try {
-    // Delete package from database
-    $stmt = $db->prepare("DELETE FROM catering_packages WHERE package_id = :id");
-    $stmt->bindParam(':id', $package_id, PDO::PARAM_INT);
-    $stmt->execute();
+    // Start a transaction to ensure atomicity
+    $db->beginTransaction();
 
-    if ($stmt->rowCount() > 0) {
-        $_SESSION['success'] = "Package deleted successfully";
+    // Delete related bookings
+    $deleteBookingsStmt = $db->prepare("DELETE FROM event_bookings WHERE package_id = :id");
+    $deleteBookingsStmt->bindParam(':id', $package_id, PDO::PARAM_INT);
+    $deleteBookingsStmt->execute();
+
+    // Delete the package
+    $deletePackageStmt = $db->prepare("DELETE FROM catering_packages WHERE package_id = :id");
+    $deletePackageStmt->bindParam(':id', $package_id, PDO::PARAM_INT);
+    $deletePackageStmt->execute();
+
+    if ($deletePackageStmt->rowCount() > 0) {
+        $response['success'] = true;
+        $response['message'] = 'Package and related bookings deleted successfully';
     } else {
-        $_SESSION['error'] = "Package not found or already deleted";
+        $response['message'] = 'Package not found or already deleted';
     }
+
+    // Commit the transaction
+    $db->commit();
 } catch (PDOException $e) {
-    $_SESSION['error'] = "Error deleting package: " . $e->getMessage();
+    // Roll back the transaction on error
+    $db->rollBack();
+    $response['message'] = 'Error deleting package: ' . $e->getMessage();
 }
 
-header("Location: packages.php");
+echo json_encode($response);
 exit();
 ?>
