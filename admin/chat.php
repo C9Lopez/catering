@@ -26,7 +26,7 @@
  
  try {
      // Fetch booking and user details for the chat, including user’s full name
-     $stmt = $db->prepare("SELECT u.first_name, u.last_name, u.user_id, eb.evegitnt_type 
+     $stmt = $db->prepare("SELECT u.first_name, u.last_name, u.user_id, eb.event_type 
                           FROM event_bookings eb 
                           JOIN users u ON eb.user_id = u.user_id 
                           WHERE eb.booking_id = :booking_id");

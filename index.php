@@ -386,7 +386,7 @@ try {
                         <div class="card-body">
                             <h5 class="card-title">${announcement.title}</h5>
                             <p class="card-text">${announcement.description}</p>
-                            <a href="announcement-detail.php?id=${announcement.id}" class="btn btn-primary">Read More</a>
+                            
                         </div>
                     </div>
                 </div>`;
