@@ -8,7 +8,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST['email']);
     $password = trim($_POST['password']);
 
-    // Check if user exists
     $stmt = $db->prepare("SELECT * FROM users WHERE email = :email");
     $stmt->bindParam(':email', $email);
     $stmt->execute();
@@ -42,79 +41,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>Login - Pochie Catering</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Bootstrap & jQuery -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Custom Styles -->
     <style>
-        /* Centering */
-        .container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        /* Card Shadow */
-        .login-card {
-            max-width: 400px;
-            width: 100%;
-            padding: 2rem;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 12px;
-            background: white;
-        }
-
-        /* Input Fields */
-        input.form-control {
-            border-radius: 8px;
-        }
-
-        /* Buttons */
-        .btn {
-            border-radius: 8px;
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .login-card {
-            animation: fadeIn 0.4s ease-out;
-        }
-
-        /* Success Animation */
-        @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-        }
-
-        .success-icon {
-            color: #28a745;
-            font-size: 50px;
-            animation: bounce 0.8s ease infinite alternate;
-        }
+        .container { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .login-card { max-width: 400px; width: 100%; padding: 2rem; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); border-radius: 12px; background: white; }
+        input.form-control { border-radius: 8px; }
+        .btn { border-radius: 8px; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .login-card { animation: fadeIn 0.4s ease-out; }
+        @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+        .success-icon { color: #28a745; font-size: 50px; animation: bounce 0.8s ease infinite alternate; }
     </style>
 </head>
 <body class="bg-light">
-
 <div class="container">
     <div class="login-card text-center">
         <h2 class="mb-4">Login</h2>
 
-        <!-- Error Message -->
         <?php if (!empty($loginError)): ?>
-            <div class="alert alert-danger">
-                <?php echo htmlspecialchars($loginError); ?>
-            </div>
+            <div class="alert alert-danger"><?php echo htmlspecialchars($loginError); ?></div>
         <?php endif; ?>
 
-        <!-- Login Success -->
         <?php if (isset($loginSuccess)): ?>
             <div class="text-success text-center">
                 <i class="fas fa-check-circle success-icon"></i>
@@ -132,12 +81,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <button type="submit" class="btn btn-primary">Login</button>
                 </div>
             </form>
+            <p class="mt-3">Forgot your password? <a href="forgot_password.php">Reset it here</a></p>
+            <p>Don't have an account? <a href="./signup.php">Signup</a></p>
+            <a href="../index.php" class="btn btn-outline-secondary btn-sm mt-2">Back to Homepage</a>
         <?php endif; ?>
-
-        <p class="mt-3">Don't have an account? <a href="./signup.php">Signup</a></p>
-        <a href="../index.php" class="btn btn-outline-secondary btn-sm mt-2">Back to Homepage</a>
     </div>
 </div>
-
 </body>
 </html>
