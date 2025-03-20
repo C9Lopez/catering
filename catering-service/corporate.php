@@ -1,6 +1,6 @@
 <?php
-  session_start();
-  require '../db.php';
+session_start();
+require '../db.php';
 
 // Fetch occupied dates for calendar
 try {
@@ -8,11 +8,15 @@ try {
     $stmt->execute();
     $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $occupiedDates = array_column($bookings, 'event_date');
+    $occupiedDates = array_map(function($date) {
+        return date('Y-m-d', strtotime($date));
+    }, $occupiedDates);
 } catch (PDOException $e) {
+    error_log("Error fetching occupied dates: " . $e->getMessage());
     $occupiedDates = [];
 }
 
-// Fetch DEBUT packages
+// Fetch Corporate packages
 try {
     $stmt = $db->prepare("SELECT * FROM catering_packages WHERE category = 'Corporate Catering'");
     $stmt->execute();
@@ -66,6 +70,9 @@ try {
     <link href="../css/packages.css" rel="stylesheet">
     <link href="../css/booking.css" rel="stylesheet">
     <link href="../css/calendar.css" rel="stylesheet">
+
+    <!-- Toastify CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js@1.12.0/src/toastify.min.css">
 </head>
 <body class="light-theme">
 
@@ -132,12 +139,12 @@ try {
         </div>
     </div>
 
-    <!-- debut Packages Section -->
+    <!-- Corporate Packages Section -->
     <div class="container-fluid py-6 wow fadeInUp" data-wow-delay="0.3s">
         <div class="container">
             <div class="text-center mb-5 wow fadeInUp" data-wow-delay="0.3s">
-                <h1 class="display-4 text-title fw-bold">Corporate Party Packages</h1>
-                <p class="fs-5 text-subtitle">Choose the perfect package for your Corporate Party</p>
+                <h1 class="display-4 text-title fw-bold">Corporate Catering Packages</h1>
+                <p class="fs-5 text-subtitle">Choose the perfect package for your Corporate Event</p>
             </div>
             <div id="packagesContainer" class="row g-4 justify-content-center">
                 <!-- Packages will be loaded here via JavaScript -->
@@ -158,11 +165,11 @@ try {
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="bookingModalLabel">Book Your Private Party Catering</h5>
+                    <h5 class="modal-title" id="bookingModalLabel">Book Your Corporate Catering</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="process_booking.php" method="POST">
+                    <form id="bookingForm" method="POST">
                         <input type="hidden" name="package_id" id="modalPackageId">
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -187,7 +194,6 @@ try {
                                 <label class="form-label">Event Time</label>
                                 <input type="time" class="form-control" name="event_time" required>
                             </div>
-                            
                             <div class="col-12">
                                 <label class="form-label">Location</label>
                                 <input type="text" class="form-control" name="location" required>
@@ -223,12 +229,72 @@ try {
     <script src="../lib/lightbox/js/lightbox.min.js"></script>
     <script src="../lib/owlcarousel/owl.carousel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <!-- Toastify JS -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js@1.12.0/src/toastify.min.js"></script>
 
     <!-- Template Javascript -->
     <script src="../js/main.js"></script>
     <script src="../js/theme-switcher.js"></script>
     <script>
         new WOW().init();
+
+        // Handle form submission via AJAX
+        $('#bookingForm').on('submit', function(e) {
+            e.preventDefault(); // Prevent default form submission
+
+            // Serialize form data
+            const formData = $(this).serialize();
+
+            // Send AJAX request
+            $.ajax({
+                url: 'process_booking.php',
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                success: function(response) {
+                    // Show toast notification
+                    Toastify({
+                        text: response.message,
+                        duration: 3000, // 3 seconds
+                        close: true,
+                        gravity: "top", // Display at the top
+                        position: "right", // Display on the right
+                        backgroundColor: response.success ? '#28a745' : '#dc3545', // Green for success, red for error
+                        stopOnFocus: true,
+                        style: {
+                            borderRadius: "10px",
+                            fontSize: "16px",
+                            padding: "15px"
+                        }
+                    }).showToast();
+
+                    // If successful, close the modal
+                    if (response.success) {
+                        $('#bookingModal').modal('hide');
+                        // Reset the form
+                        $('#bookingForm')[0].reset();
+                        $('#eventDate').val(''); // Clear the hidden event date field
+                    }
+                },
+                error: function(xhr, status, error) {
+                    // Show error toast if AJAX request fails
+                    Toastify({
+                        text: "An error occurred while processing your request.",
+                        duration: 3000,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: '#dc3545',
+                        stopOnFocus: true,
+                        style: {
+                            borderRadius: "10px",
+                            fontSize: "16px",
+                            padding: "15px"
+                        }
+                    }).showToast();
+                }
+            });
+        });
 
         // Booking Modal & Calendar Setup
         document.addEventListener("DOMContentLoaded", function () {
@@ -252,10 +318,10 @@ try {
                 if (!calendarInitialized) {
                     var calendarEl = document.getElementById('calendar');
                     const now = new Date();
-                    const philippineTimeOffset = 8 * 60;
+                    const philippineTimeOffset = 8 * 60; // UTC+8 for Philippines
                     const localOffset = now.getTimezoneOffset();
                     const philippineTime = new Date(now.getTime() + (philippineTimeOffset + localOffset) * 60 * 1000);
-                    const today = new Date(philippineTime.toISOString().split('T')[0]);
+                    const today = philippineTime.toISOString().split('T')[0]; // YYYY-MM-DD format
 
                     var calendar = new FullCalendar.Calendar(calendarEl, {
                         initialView: 'dayGridMonth',
@@ -274,23 +340,28 @@ try {
                             selectable: false
                         })),
                         dateClick: function(info) {
-                            if (new Date(info.dateStr) < today) {
+                            const selectedDate = info.dateStr;
+                            const todayDate = new Date(today);
+                            const clickedDate = new Date(selectedDate);
+
+                            if (clickedDate < todayDate.setHours(0, 0, 0, 0)) {
                                 alert('You cannot book a past date. Please select a future date.');
                                 return;
                             }
-                            if (occupiedDates.includes(info.dateStr)) {
+                            if (occupiedDates.includes(selectedDate)) {
                                 alert('This date is already occupied. Please choose another date.');
                                 return;
                             }
-                            document.getElementById('eventDate').value = info.dateStr;
+                            document.getElementById('eventDate').value = selectedDate;
                             calendar.getEvents().forEach(event => {
                                 if (event.title === 'Selected') event.remove();
                             });
                             calendar.addEvent({
                                 title: 'Selected',
-                                start: info.dateStr,
+                                start: selectedDate,
                                 allDay: true,
-                                color: '#28a745'
+                                backgroundColor: '#28a745',
+                                borderColor: '#28a745'
                             });
                         }
                     });
@@ -298,9 +369,15 @@ try {
                     calendarInitialized = true;
                 }
             });
+
+            // Reset calendar selection when modal is closed
+            bookingModal.addEventListener("hidden.bs.modal", function () {
+                $('#eventDate').val('');
+                // Optionally reinitialize the calendar or clear events if needed
+            });
         });
 
-        // Client-side Pagination for Private Packages
+        // Client-side Pagination for Corporate Packages
         let currentPage = <?php echo $currentPage; ?>;
         const itemsPerPage = <?php echo $itemsPerPage; ?>;
         const totalPackages = <?php echo $totalPackages; ?>;
@@ -390,7 +467,6 @@ try {
 
         // Initial load
         loadPackages(currentPage);
-    
     </script>
 </body>
 </html>

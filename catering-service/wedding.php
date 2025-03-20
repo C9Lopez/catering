@@ -4,12 +4,10 @@ require '../db.php';
 
 // Fetch occupied dates for calendar
 try {
-    // Use lowercase 'approved' to match typical database convention
     $stmt = $db->prepare("SELECT event_date FROM event_bookings WHERE booking_status = 'approved'");
     $stmt->execute();
     $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $occupiedDates = array_column($bookings, 'event_date');
-    // Ensure dates are in 'YYYY-MM-DD' format for FullCalendar
     $occupiedDates = array_map(function($date) {
         return date('Y-m-d', strtotime($date));
     }, $occupiedDates);
@@ -72,6 +70,9 @@ try {
     <link href="../css/packages.css" rel="stylesheet">
     <link href="../css/booking.css" rel="stylesheet">
     <link href="../css/calendar.css" rel="stylesheet">
+
+    <!-- Toastify CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js@1.12.0/src/toastify.min.css">
 </head>
 <body class="light-theme">
     <!-- Loading Screen -->
@@ -145,7 +146,7 @@ try {
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="process_booking.php" method="POST">
+                    <form id="bookingForm" method="POST">
                         <input type="hidden" name="package_id" id="modalPackageId">
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -170,7 +171,6 @@ try {
                                 <label class="form-label">Event Time</label>
                                 <input type="time" class="form-control" name="event_time" required>
                             </div>
-                            
                             <div class="col-12">
                                 <label class="form-label">Location</label>
                                 <input type="text" class="form-control" name="location" required>
@@ -208,8 +208,69 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="../js/main.js"></script>
     <script src="../js/theme-switcher.js"></script>
+    <!-- Toastify JS -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js@1.12.0/src/toastify.min.js"></script>
+
     <script>
         new WOW().init();
+
+        // Handle form submission via AJAX
+        $('#bookingForm').on('submit', function(e) {
+            e.preventDefault(); // Prevent default form submission
+
+            // Serialize form data
+            const formData = $(this).serialize();
+
+            // Send AJAX request
+            $.ajax({
+                url: 'process_booking.php',
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                success: function(response) {
+                    // Show toast notification
+                    Toastify({
+                        text: response.message,
+                        duration: 3000, // 3 seconds
+                        close: true,
+                        gravity: "top", // Display at the top
+                        position: "right", // Display on the right
+                        backgroundColor: response.success ? '#28a745' : '#dc3545', // Green for success, red for error
+                        stopOnFocus: true,
+                        style: {
+                            borderRadius: "10px",
+                            fontSize: "16px",
+                            padding: "15px"
+                        }
+                    }).showToast();
+
+                    // If successful, close the modal
+                    if (response.success) {
+                        $('#bookingModal').modal('hide');
+                        // Optionally reset the form
+                        $('#bookingForm')[0].reset();
+                        $('#eventDate').val(''); // Clear the hidden event date field
+                    }
+                },
+                error: function(xhr, status, error) {
+                    // Show error toast if AJAX request fails
+                    Toastify({
+                        text: "An error occurred while processing your request.",
+                        duration: 3000,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: '#dc3545',
+                        stopOnFocus: true,
+                        style: {
+                            borderRadius: "10px",
+                            fontSize: "16px",
+                            padding: "15px"
+                        }
+                    }).showToast();
+                }
+            });
+        });
 
         // Booking Modal & Calendar Setup
         document.addEventListener("DOMContentLoaded", function () {

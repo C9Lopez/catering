@@ -36,11 +36,11 @@ try {
         'cancelled' => 0
     ], $statusCounts);
 
-    // Fetch all booking events for the calendar (no date filter)
+    // Fetch all booking events for the calendar with event type (category)
     $stmt = $db->prepare("
         SELECT eb.booking_id, eb.event_date, eb.event_time, eb.booking_status, eb.location, eb.package_id, 
-               eb.user_id, cp.name AS package_name, u.first_name, u.middle_name, u.last_name, u.birthdate, 
-               u.gender, u.address, u.contact_no, u.email
+               eb.user_id, cp.name AS package_name, cp.category AS event_type, 
+               u.first_name, u.middle_name, u.last_name, u.birthdate, u.gender, u.address, u.contact_no, u.email
         FROM event_bookings eb
         LEFT JOIN catering_packages cp ON eb.package_id = cp.package_id
         LEFT JOIN users u ON eb.user_id = u.user_id
@@ -227,7 +227,8 @@ try {
                             'email' => $booking['email'],
                             'location' => $booking['location'],
                             'status' => $booking['booking_status'],
-                            'package' => $booking['package_name']
+                            'package' => $booking['package_name'],
+                            'event_type' => str_replace(' Catering', '', $booking['event_type']) // Remove " Catering" from category name
                         ]
                     ];
                 }, $bookings)); ?>,
@@ -237,6 +238,7 @@ try {
                     const modalBody = `
                         <h6>Booking Details</h6>
                         <p><strong>Booking ID:</strong> ${info.event.id}</p>
+                        <p><strong>Event Type:</strong> ${props.event_type || 'N/A'}</p>
                         <p><strong>Package:</strong> ${props.package}</p>
                         <p><strong>Location:</strong> ${props.location}</p>
                         <p><strong>Event Date:</strong> ${info.event.start.toLocaleString()}</p>
