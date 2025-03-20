@@ -67,7 +67,7 @@ try {
 
         if ($sender === 'user') {
             $senderTitle = $isUser ? 'You' : $userFullName;
-            $senderClass = 'user'; // Use 'user' class for consistency with CSS
+            $senderClass = 'user';
         } elseif ($sender === 'admin') {
             $senderTitle = 'Admin';
             $senderClass = 'admin';
@@ -76,6 +76,21 @@ try {
         echo "<div class='message $senderClass'>";
         echo "<strong>" . htmlspecialchars($senderTitle) . ":</strong> ";
         echo htmlspecialchars($msg['message']);
+        if (!empty($msg['file_path'])) {
+            $fileExtension = strtolower(pathinfo($msg['file_path'], PATHINFO_EXTENSION));
+            $imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+            echo "<div class='file-attachment'>";
+            if (in_array($fileExtension, $imageExtensions)) {
+                echo "<a href='../" . htmlspecialchars($msg['file_path']) . "' target='_blank'>";
+                echo "<img src='../" . htmlspecialchars($msg['file_path']) . "' alt='Attachment'>";
+                echo "</a>";
+            } else {
+                echo "<a href='../" . htmlspecialchars($msg['file_path']) . "' target='_blank'>";
+                echo "<i class='fas fa-file'></i> Download Attachment";
+                echo "</a>";
+            }
+            echo "</div>";
+        }
         echo "<small class='text-muted d-block mt-2'>Sent at " . date('h:i A', strtotime($msg['created_at'])) . "</small>";
         echo "</div>";
     }

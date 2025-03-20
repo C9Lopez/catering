@@ -25,7 +25,7 @@ try {
         foreach ($bookings as $row) {
             $desc = "Date: " . htmlspecialchars($row['event_date']) . " | Time: " . htmlspecialchars($row['event_time']) . 
                     " | Setup: " . htmlspecialchars($row['setup_time']) . " | Location: " . htmlspecialchars($row['location']);
-            echo "<tr>
+            echo "<tr data-booking-id='{$row['booking_id']}'>
                 <td>" . htmlspecialchars($row['booking_id']) . "</td>
                 <td>" . htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) . "</td>
                 <td>" . htmlspecialchars($row['package_name']) . "</td>
@@ -65,3 +65,4 @@ function getStatusClass($status) {
         default => 'bg-secondary text-white'
     };
 }
+?>

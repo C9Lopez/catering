@@ -17,6 +17,9 @@ try {
     $counts = ['pending' => 0, 'approved' => 0, 'rejected' => 0, 'completed' => 0, 'cancelled' => 0];
 }
 
+// Get the booking_id to highlight from the URL
+$highlightBookingId = isset($_GET['highlight']) ? (int)$_GET['highlight'] : null;
+
 function getStatusClass($status) {
     return match ($status) {
         'pending' => 'bg-warning text-dark',
@@ -124,6 +127,11 @@ function getStatusClass($status) {
         .details-content p {
             margin: 5px 0;
             font-size: 0.9rem;
+        }
+        /* Highlight style for the selected booking */
+        .highlight {
+            background-color: #fff3cd !important;
+            transition: background-color 0.5s ease;
         }
         /* Responsive adjustments */
         @media (max-width: 991.98px) {
@@ -346,11 +354,36 @@ function getStatusClass($status) {
                     type: 'GET',
                     dataType: 'html',
                     cache: false,
-                    success: data => $(`#${status}BookingsBody`).html(data),
+                    success: data => {
+                        $(`#${status}BookingsBody`).html(data);
+                        // Highlight the booking if it matches the highlightBookingId
+                        highlightBooking();
+                    },
                     error: (xhr, status, error) => console.error(`Error loading ${status} bookings: ${error}`)
                 });
             });
             updateStatusCounts();
+        }
+
+        function highlightBooking() {
+            const highlightBookingId = <?php echo json_encode($highlightBookingId); ?>;
+            if (highlightBookingId) {
+                const $row = $(`tr[data-booking-id="${highlightBookingId}"]`);
+                if ($row.length) {
+                    // Highlight the row
+                    $row.addClass('highlight');
+                    // Expand the section if it's not already expanded
+                    const $card = $row.closest('.card');
+                    const $cardBody = $card.find('.card-body');
+                    if ($cardBody.is(':hidden')) {
+                        $card.find('.card-header').click(); // Simulate a click to expand the section
+                    }
+                    // Scroll to the row
+                    $('html, body').animate({
+                        scrollTop: $row.offset().top - 100
+                    }, 500);
+                }
+            }
         }
 
         $(document).ready(() => loadInitialBookings());

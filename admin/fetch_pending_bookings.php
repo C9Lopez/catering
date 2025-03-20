@@ -53,7 +53,7 @@ try {
             ";
 
             // Main row
-            echo "<tr>
+            echo "<tr data-booking-id='{$row['booking_id']}'>
                 <td><i class='fas fa-chevron-down expand-btn'></i></td>
                 <td>" . htmlspecialchars($row['booking_id']) . "</td>
                 <td class='customer-col'>" . $customerName . "</td>
@@ -99,3 +99,4 @@ function getStatusClass($status) {
         default => 'bg-secondary text-white'
     };
 }
+?>

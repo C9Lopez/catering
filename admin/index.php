@@ -192,7 +192,7 @@ try {
                 <div class="modal-body" id="bookingModalBody"></div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <a href="orders.php" class="btn btn-primary">Go to Orders</a>
+                    <a id="goToOrdersBtn" href="orders.php" class="btn btn-primary">Go to Orders</a>
                 </div>
             </div>
         </div>
@@ -228,7 +228,7 @@ try {
                             'location' => $booking['location'],
                             'status' => $booking['booking_status'],
                             'package' => $booking['package_name'],
-                            'event_type' => str_replace(' Catering', '', $booking['event_type']) // Remove " Catering" from category name
+                            'event_type' => str_replace(' Catering', '', $booking['event_type'])
                         ]
                     ];
                 }, $bookings)); ?>,
@@ -253,6 +253,8 @@ try {
                         <p><strong>Email:</strong> ${props.email}</p>
                     `;
                     $('#bookingModalBody').html(modalBody);
+                    // Update the "Go to Orders" button href with the booking_id
+                    $('#goToOrdersBtn').attr('href', `orders.php?highlight=${info.event.id}`);
                     $('#bookingModal').removeAttr('inert').modal('show');
                 },
                 eventDidMount: function(info) {

@@ -22,12 +22,11 @@ if ($booking_id <= 0) {
     die("Invalid booking ID.");
 }
 
-$chatStmt = $db->prepare("UPDATE chat_messages SET is_unread = 0 WHERE order_id =  :booking_id  AND user_id =  :user_id");
+$chatStmt = $db->prepare("UPDATE chat_messages SET is_unread = 0 WHERE order_id = :booking_id AND user_id = :user_id");
 $chatStmt->execute([
     ':booking_id' => $booking_id,
     ':user_id' => $user_id
 ]);
-
 
 try {
     // Fetch user's full name for later use on admin side
@@ -82,7 +81,7 @@ try {
             height: 70vh;
             overflow-y: auto;
             padding: 20px;
-            background: #f8f9fa; /* Light gray background for contrast */
+            background: #f8f9fa;
             border-radius: 8px;
             margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -96,19 +95,19 @@ try {
             font-size: 1rem;
             line-height: 1.5;
             transition: all 0.3s ease;
-            word-wrap: break-word; /* Ensure long messages wrap properly */
+            word-wrap: break-word;
         }
         .message.user {
-            background: #007bff; /* Blue for user (you) messages */
+            background: #007bff;
             color: white;
             margin-left: auto;
         }
         .message.admin {
-            background: #28a745; /* Green for admin messages */
+            background: #28a745;
             color: white;
         }
         .message.error {
-            background: #dc3545; /* Red for error messages */
+            background: #dc3545;
             color: white;
             margin-bottom: 15px;
         }
@@ -116,31 +115,52 @@ try {
             opacity: 0.9;
             transform: translateY(-2px);
         }
+        .file-attachment {
+            margin-top: 10px;
+            display: block;
+        }
+        .file-attachment img {
+            max-width: 200px;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        .file-attachment a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .file-attachment a:hover {
+            text-decoration: underline;
+        }
         .chat-input {
             display: flex;
             gap: 15px;
             margin-top: 15px;
+            align-items: center;
         }
-        .chat-input input {
+        .chat-input input[type="text"] {
             flex-grow: 1;
             border-radius: 4px;
             border: 1px solid #ced4da;
             padding: 10px;
             font-size: 1rem;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            background-color: #ffffff; /* White background for input */
+            background-color: #ffffff;
+        }
+        .chat-input input[type="file"] {
+            border: none;
+            padding: 5px 0;
         }
         .chat-input button {
             padding: 10px 20px;
             font-weight: 500;
-            background-color: #007bff; /* Blue button to match theme */
+            background-color: #007bff;
             border: none;
             border-radius: 4px;
             color: white;
             transition: background-color 0.3s ease, transform 0.3s ease;
         }
         .chat-input button:hover {
-            background-color: #0056b3; /* Darker blue on hover */
+            background-color: #0056b3;
             transform: translateY(-2px);
             cursor: pointer;
         }
@@ -166,17 +186,35 @@ try {
                             <div class="message <?php echo $msg['sender'] === 'user' ? 'user' : 'admin'; ?>">
                                 <strong><?php echo $msg['sender'] === 'user' ? 'You' : 'Admin'; ?>:</strong> 
                                 <?php echo htmlspecialchars($msg['message']); ?>
+                                <?php if (!empty($msg['file_path'])): ?>
+                                    <?php
+                                    $fileExtension = strtolower(pathinfo($msg['file_path'], PATHINFO_EXTENSION));
+                                    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+                                    ?>
+                                    <div class="file-attachment">
+                                        <?php if (in_array($fileExtension, $imageExtensions)): ?>
+                                            <a href="<?php echo htmlspecialchars($msg['file_path']); ?>" target="_blank">
+                                                <img src="<?php echo htmlspecialchars($msg['file_path']); ?>" alt="Attachment">
+                                            </a>
+                                        <?php else: ?>
+                                            <a href="<?php echo htmlspecialchars($msg['file_path']); ?>" target="_blank">
+                                                <i class="fas fa-file"></i> Download Attachment
+                                            </a>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
                                 <small class="text-muted d-block mt-2">Sent at <?php echo date('h:i A', strtotime($msg['created_at'])); ?></small>
                             </div>
                         <?php endforeach; ?>
                     </div>
                     
-                    <form id="chatForm" method="POST" action="admin/save_chat.php">
+                    <form id="chatForm" method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="booking_id" value="<?php echo $booking_id; ?>">
                         <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
                         <input type="hidden" name="sender" value="user">
                         <div class="chat-input">
-                            <input type="text" id="message" name="message" class="form-control" placeholder="Type a message..." required>
+                            <input type="text" id="message" name="message" class="form-control" placeholder="Type a message...">
+                            <input type="file" id="fileInput" name="file" accept="image/*,application/pdf">
                             <button type="submit" class="btn btn-primary">Send</button>
                         </div>
                     </form>
@@ -194,31 +232,26 @@ try {
         // Initialize WOW.js animations
         new WOW().init();
 
-        // Function to fetch and update chat messages in real-time, ensuring styles persist
+        // Function to fetch and update chat messages in real-time
         function fetchMessages() {
             $.ajax({
                 url: 'admin/fetch_chat.php',
                 method: 'GET',
-                data: { booking_id: <?php echo $booking_id; ?>, context: 'user' }, // Explicitly indicate user context
+                data: { booking_id: <?php echo $booking_id; ?>, context: 'user' },
                 success: function(response) {
                     if (typeof response === 'object' && response.error) {
                         console.error('Error fetching messages:', response.error);
                         $('#chatMessages').append('<div class="message error">Error loading messages: ' + response.error + '</div>');
                     } else if (typeof response === 'string') {
                         $('#chatMessages').html(response);
-                        $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight); // Auto-scroll to latest message
+                        $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
                     } else {
                         console.error('Unexpected response format:', response);
                         $('#chatMessages').append('<div class="message error">Unexpected response format. Please try again.</div>');
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('AJAX Error fetching messages:', {
-                        status: status,
-                        error: error,
-                        responseText: xhr.responseText,
-                        url: xhr.url
-                    });
+                    console.error('AJAX Error fetching messages:', { status: status, error: error, responseText: xhr.responseText });
                     $('#chatMessages').append('<div class="message error">Network error loading messages: ' + error + '</div>');
                 }
             });
@@ -230,34 +263,39 @@ try {
         // Initial message load
         fetchMessages();
 
-        // Handle form submission for sending messages
+        // Handle form submission for sending messages with file
         $('#chatForm').submit(function(e) {
             e.preventDefault();
+
             const message = $('#message').val().trim();
-            if (!message) {
-                alert('Please enter a message.');
+            const fileInput = $('#fileInput')[0].files[0];
+
+            if (!message && !fileInput) {
+                alert('Please enter a message or select a file to send.');
                 return;
             }
+
+            const formData = new FormData(this);
+            formData.append('message', message);
+
             $.ajax({
                 url: 'admin/save_chat.php',
                 method: 'POST',
-                data: $(this).serialize(),
+                data: formData,
+                processData: false,
+                contentType: false,
                 success: function(response) {
                     const data = JSON.parse(response);
                     if (data.success) {
-                        $('#message').val(''); // Clear input after successful send
-                        fetchMessages(); // Refresh messages
+                        $('#message').val('');
+                        $('#fileInput').val('');
+                        fetchMessages();
                     } else {
                         alert('Error: ' + (data.message || 'Failed to send message'));
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('Error sending message:', {
-                        status: status,
-                        error: error,
-                        responseText: xhr.responseText,
-                        url: xhr.url
-                    });
+                    console.error('Error sending message:', { status: status, error: error, responseText: xhr.responseText });
                     alert('Error sending message: ' + error + ' (Status: ' + status + ')');
                 }
             });
