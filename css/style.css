@@ -337,7 +337,22 @@ h4, h5, h6, .h4, .h5, .h6 {
     direction: ltr !important;
 } */
 /*** testimonial End ***/
+/* Notification and Message Dropdown */
+.notification-dropdown, .message-dropdown {
+    max-height: 400px;
+    overflow-y: auto;
+    width: 300px;
+}
 
+.notification-item, .message-item {
+    padding: 10px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.notification-item.unread, .message-item {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
 
 /*** Contact start ***/
 .contact-form {

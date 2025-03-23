@@ -35,19 +35,6 @@ try {
         $age = $today->diff($birthdate)->y;
     }
 
-    // Fetch all bookings for the logged-in user
-    $bookingStmt = $db->prepare("
-        SELECT eb.booking_id, eb.package_id, eb.event_type, eb.event_date, eb.event_time, eb.booking_status, eb.created_at, 
-               cp.category, cp.price 
-        FROM event_bookings eb 
-        LEFT JOIN catering_packages cp ON eb.package_id = cp.package_id 
-        WHERE eb.user_id = :user_id 
-        ORDER BY eb.created_at DESC
-    ");
-    $bookingStmt->bindParam(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
-    $bookingStmt->execute();
-    $allBookings = $bookingStmt->fetchAll(PDO::FETCH_ASSOC);
-
 } catch (PDOException $e) {
     die("Error fetching data: " . $e->getMessage());
 }
@@ -146,6 +133,24 @@ $currentDate = new DateTime();
             padding: 2px 8px;
             border-radius: 12px;
         }
+        /* Notification Dropdown */
+        .notification-dropdown {
+            max-height: 400px;
+            overflow-y: auto;
+            width: 300px;
+        }
+        .notification-item {
+            padding: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .notification-item.unread {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .pagination {
+            margin-top: 20px;
+            justify-content: center;
+        }
     </style>
 </head>
 <body class="light-theme">
@@ -226,60 +231,13 @@ $currentDate = new DateTime();
             <div class="row justify-content-center">
                 <div class="col-12 col-md-8 col-lg-8">
                     <div id="bookings-container">
-                        <?php if (empty($allBookings)): ?>
-                            <p class="text-center text-muted">No recent bookings found.</p>
-                        <?php else: ?>
-                            <?php foreach ($allBookings as $booking): 
-                                // Fetch unread message count for this booking (from admin)
-                                $chatStmt = $db->prepare("SELECT COUNT(*) as unread FROM chat_messages WHERE order_id = :booking_id AND user_id = :user_id AND sender = 'admin' AND is_unread != 0");
-                                $chatStmt->execute([
-                                    ':booking_id' => $booking['booking_id'],
-                                    ':user_id' => $user_id
-                                ]);
-                                $unreadCount = $chatStmt->fetch(PDO::FETCH_ASSOC)['unread'];
-
-                                // Check if cancellation is allowed
-                                $eventDate = new DateTime($booking['event_date']);
-                                $daysUntilEvent = $currentDate->diff($eventDate)->days;
-                                $canCancel = ($booking['booking_status'] === 'pending' && $daysUntilEvent >= 7);
-                            ?>
-                                <div class="booking-card <?php echo htmlspecialchars(str_replace(' ', '-', strtolower($booking['category']))); ?>" 
-                                     data-type="<?php echo htmlspecialchars($booking['category']); ?>" 
-                                     data-status="<?php echo htmlspecialchars($booking['booking_status']); ?>">
-                                    <h5><?php echo htmlspecialchars($booking['event_type']); ?></h5>
-                                    <div class="category-badge"><?php echo htmlspecialchars(formatCategory($booking['category'])); ?></div>
-                                    <p><strong>Event Date:</strong> <?php echo date('F j, Y', strtotime($booking['event_date'])); ?></p>
-                                    <p><strong>Event Time:</strong> <?php echo date('h:i A', strtotime($booking['event_time'])); ?></p>
-                                    <p><strong>Booking Date:</strong> <?php echo date('F j, Y, h:i A', strtotime($booking['created_at'])); ?></p>
-                                    <p><strong>Price:</strong> <?php echo $booking['price'] !== null ? '₱' . number_format($booking['price'], 2) : 'N/A'; ?></p>
-                                    <p>
-                                        <strong>Status:</strong> 
-                                        <span class="status <?php 
-                                            echo $booking['booking_status'] === 'pending' ? 'status-pending' : 
-                                                ($booking['booking_status'] === 'on_process' ? 'status-on-process' : 
-                                                ($booking['booking_status'] === 'approved' ? 'status-approved' : 
-                                                ($booking['booking_status'] === 'rejected' ? 'status-rejected' : 
-                                                ($booking['booking_status'] === 'cancelled' ? 'status-cancelled' : 'status-completed')))); ?>">
-                                            <?php echo ucfirst(str_replace('_', ' ', htmlspecialchars($booking['booking_status']))); ?>
-                                        </span>
-                                    </p>
-                                    <?php if ($booking['booking_status'] === 'approved' || $booking['booking_status'] === 'on_process'): ?>
-                                        <a href="chat_user.php?booking_id=<?php echo $booking['booking_id']; ?>" class="btn btn-secondary btn-sm chat-btn">
-                                            <i class="fas fa-comments"></i> Chat
-                                            <?php if ($unreadCount != 0): ?>
-                                                <span class="badge bg-danger"><?php echo $unreadCount; ?></span>
-                                            <?php endif; ?>
-                                        </a>
-                                    <?php endif; ?>
-                                    <?php if ($canCancel): ?>
-                                        <a href="cancel_booking.php?booking_id=<?php echo $booking['booking_id']; ?>" class="btn btn-danger btn-sm cancel-btn" onclick="return confirm('Are you sure you want to cancel this booking?');">
-                                            <i class="fas fa-times"></i> Cancel Booking
-                                        </a>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
+                        <!-- Bookings will be loaded here via AJAX -->
                     </div>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination" id="pagination">
+                            <!-- Pagination will be loaded here via AJAX -->
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </div>
@@ -369,11 +327,177 @@ $currentDate = new DateTime();
             reader.readAsDataURL(event.target.files[0]);
         }
 
+        // Real-Time Notifications
+        function fetchNotifications() {
+            console.log('Fetching notifications...');
+            $.ajax({
+                url: 'fetch_notifications.php',
+                method: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    console.log('Notifications response:', response);
+                    if (response.error) {
+                        console.error(response.error);
+                        return;
+                    }
+
+                    // Update notification count
+                    $('.notification-count').text(response.unread_count);
+
+                    // Update notification list
+                    const notificationList = $('#notification-list');
+                    notificationList.empty();
+                    if (response.notifications.length === 0) {
+                        notificationList.append('<li class="dropdown-item text-muted">No notifications</li>');
+                    } else {
+                        response.notifications.forEach(notif => {
+                            const isUnread = notif.is_read == 0 ? 'unread' : '';
+                            const date = new Date(notif.created_at).toLocaleString();
+                            notificationList.append(`
+                                <li class="notification-item ${isUnread}">
+                                    <div>${notif.message}</div>
+                                    <small class="text-muted">${date}</small>
+                                </li>
+                            `);
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching notifications:', error);
+                }
+            });
+        }
+
+        // Mark notifications as read when dropdown is opened
+        $('#notificationBell').on('click', function() {
+            $.ajax({
+                url: 'fetch_notifications.php',
+                method: 'GET',
+                data: { mark_read: true },
+                success: function() {
+                    $('.notification-count').text('0');
+                }
+            });
+        });
+
+        // Fetch notifications initially and then every 10 seconds
+        fetchNotifications();
+        setInterval(fetchNotifications, 10000);
+
+        // AJAX Pagination and Filtering for Bookings
+        let currentPage = 1;
+        let currentCategoryFilter = 'all';
+        let currentStatusFilter = 'all';
+
+        function fetchBookings(page, categoryFilter, statusFilter) {
+            $.ajax({
+                url: 'fetch_bookings.php',
+                method: 'GET',
+                data: {
+                    page: page,
+                    category: categoryFilter,
+                    status: statusFilter
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.error) {
+                        console.error(response.error);
+                        $('#bookings-container').html('<p class="text-center text-muted">Error loading bookings.</p>');
+                        return;
+                    }
+
+                    // Update bookings
+                    const bookingsContainer = $('#bookings-container');
+                    bookingsContainer.empty();
+                    if (response.bookings.length === 0) {
+                        bookingsContainer.append('<p class="text-center text-muted">No bookings found for this filter.</p>');
+                    } else {
+                        response.bookings.forEach(booking => {
+                            const eventDate = new Date(booking.event_date);
+                            const currentDate = new Date();
+                            const daysUntilEvent = Math.ceil((eventDate - currentDate) / (1000 * 60 * 60 * 24));
+                            const canCancel = (booking.booking_status === 'pending' && daysUntilEvent >= 7);
+
+                            const statusClass = booking.booking_status === 'pending' ? 'status-pending' :
+                                (booking.booking_status === 'on_process' ? 'status-on-process' :
+                                (booking.booking_status === 'approved' ? 'status-approved' :
+                                (booking.booking_status === 'rejected' ? 'status-rejected' :
+                                (booking.booking_status === 'cancelled' ? 'status-cancelled' : 'status-completed'))));
+
+                            bookingsContainer.append(`
+                                <div class="booking-card ${booking.category.toLowerCase().replace(' ', '-')}" 
+                                     data-type="${booking.category}" 
+                                     data-status="${booking.booking_status}">
+                                    <h5>${booking.event_type}</h5>
+                                    <div class="category-badge">${formatCategory(booking.category)}</div>
+                                    <p><strong>Event Date:</strong> ${new Date(booking.event_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                                    <p><strong>Event Time:</strong> ${new Date(booking.event_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}</p>
+                                    <p><strong>Booking Date:</strong> ${new Date(booking.created_at).toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })}</p>
+                                    <p><strong>Price:</strong> ${booking.price !== null ? '₱' + Number(booking.price).toLocaleString('en-US', { minimumFractionDigits: 2 }) : 'N/A'}</p>
+                                    <p>
+                                        <strong>Status:</strong> 
+                                        <span class="status ${statusClass}">
+                                            ${booking.booking_status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                                        </span>
+                                    </p>
+                                    ${booking.booking_status === 'approved' || booking.booking_status === 'on_process' ? `
+                                        <a href="chat_user.php?booking_id=${booking.booking_id}" class="btn btn-secondary btn-sm chat-btn">
+                                            <i class="fas fa-comments"></i> Chat
+                                            ${booking.unread_count > 0 ? `<span class="badge bg-danger">${booking.unread_count}</span>` : ''}
+                                        </a>
+                                    ` : ''}
+                                    ${canCancel ? `
+                                        <a href="cancel_booking.php?booking_id=${booking.booking_id}" class="btn btn-danger btn-sm cancel-btn" onclick="return confirm('Are you sure you want to cancel this booking?');">
+                                            <i class="fas fa-times"></i> Cancel Booking
+                                        </a>
+                                    ` : ''}
+                                </div>
+                            `);
+                        });
+                    }
+
+                    // Update pagination
+                    const pagination = $('#pagination');
+                    pagination.empty();
+                    if (response.total_pages > 0) {
+                        pagination.append(`
+                            <li class="page-item ${response.current_page === 1 ? 'disabled' : ''}">
+                                <a class="page-link" href="#" data-page="${response.current_page - 1}">Previous</a>
+                            </li>
+                        `);
+                        for (let i = 1; i <= response.total_pages; i++) {
+                            pagination.append(`
+                                <li class="page-item ${i === response.current_page ? 'active' : ''}">
+                                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                                </li>
+                            `);
+                        }
+                        pagination.append(`
+                            <li class="page-item ${response.current_page === response.total_pages ? 'disabled' : ''}">
+                                <a class="page-link" href="#" data-page="${response.current_page + 1}">Next</a>
+                            </li>
+                        `);
+                    }
+
+                    // Display total bookings
+                    const totalBookingsInfo = `<p class="text-center text-muted mt-3">Showing ${response.bookings.length} of ${response.total_bookings} bookings</p>`;
+                    bookingsContainer.append(totalBookingsInfo);
+
+                    currentPage = response.current_page;
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching bookings:', error);
+                    $('#bookings-container').html('<p class="text-center text-muted">Error loading bookings.</p>');
+                }
+            });
+        }
+
         // Category filter
         document.querySelectorAll('.filter-btn').forEach(button => {
             button.addEventListener('click', function() {
-                const categoryFilter = this.getAttribute('data-filter').toLowerCase().trim();
-                applyFilters(categoryFilter, null);
+                currentCategoryFilter = this.getAttribute('data-filter').toLowerCase().trim();
+                currentPage = 1; // Reset to first page
+                fetchBookings(currentPage, currentCategoryFilter, currentStatusFilter);
                 document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
             });
@@ -382,51 +506,32 @@ $currentDate = new DateTime();
         // Status filter
         document.querySelectorAll('.status-filter-btn').forEach(button => {
             button.addEventListener('click', function() {
-                const statusFilter = this.getAttribute('data-status-filter').toLowerCase().trim();
-                const activeCategory = document.querySelector('.filter-btn.active')?.getAttribute('data-filter').toLowerCase().trim() || 'all';
-                applyFilters(activeCategory, statusFilter);
+                currentStatusFilter = this.getAttribute('data-status-filter').toLowerCase().trim();
+                currentPage = 1; // Reset to first page
+                fetchBookings(currentPage, currentCategoryFilter, currentStatusFilter);
                 document.querySelectorAll('.status-filter-btn').forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
             });
         });
 
-        // Combined filter function
-        function applyFilters(categoryFilter, statusFilter) {
-            const cards = document.querySelectorAll('.booking-card');
-            let visibleCards = 0;
-
-            cards.forEach(card => {
-                const cardCategory = card.getAttribute('data-type').toLowerCase().trim();
-                const cardStatus = card.getAttribute('data-status').toLowerCase().trim();
-                
-                const categoryMatch = (categoryFilter === 'all' || cardCategory === categoryFilter);
-                const statusMatch = (statusFilter === null || statusFilter === 'all' || cardStatus === statusFilter);
-                
-                if (categoryMatch && statusMatch) {
-                    card.style.display = 'block';
-                    visibleCards++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            // Show message if no bookings match the filter
-            const container = document.getElementById('bookings-container');
-            const noBookingsMessage = container.querySelector('.no-bookings-message');
-            if (noBookingsMessage) {
-                noBookingsMessage.remove();
+        // Pagination click handler
+        $(document).on('click', '.page-link', function(e) {
+            e.preventDefault();
+            const page = parseInt($(this).data('page'));
+            if (page && !$(this).parent().hasClass('disabled')) {
+                fetchBookings(page, currentCategoryFilter, currentStatusFilter);
             }
-            if (visibleCards === 0) {
-                const message = document.createElement('p');
-                message.className = 'text-center text-muted no-bookings-message';
-                message.textContent = 'No bookings found for this filter.';
-                container.appendChild(message);
-            }
+        });
+
+        // Initial fetch
+        fetchBookings(currentPage, currentCategoryFilter, currentStatusFilter);
+        document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
+        document.querySelector('.status-filter-btn[data-status-filter="all"]').classList.add('active');
+
+        // Format category for display (client-side equivalent of PHP function)
+        function formatCategory(category) {
+            return category.replace('Catering', 'Party Catering');
         }
-
-        // Initialize with "All" category and "All" status
-        document.querySelector('.filter-btn[data-filter="all"]').click();
-        document.querySelector('.status-filter-btn[data-status-filter="all"]').click();
     </script>
 </body>
 </html>

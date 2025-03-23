@@ -36,6 +36,9 @@ if (!in_array($sender, ['user', 'admin'])) {
     exit;
 }
 
+// Set is_unread based on sender: 1 if admin sends to user, 0 if user sends to admin
+$is_unread = ($sender === 'admin') ? 1 : 0;
+
 // Check if a file is uploaded
 $filePath = null;
 if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
@@ -83,16 +86,17 @@ if (empty($message) && empty($filePath)) {
 
 try {
     // Prepare and execute INSERT query to save the chat message
-    $stmt = $db->prepare("INSERT INTO chat_messages (order_id, user_id, sender, message, file_path) VALUES (:booking_id, :user_id, :sender, :message, :file_path)");
+    $stmt = $db->prepare("INSERT INTO chat_messages (order_id, user_id, sender, message, file_path, is_unread) VALUES (:booking_id, :user_id, :sender, :message, :file_path, :is_unread)");
     $stmt->bindParam(':booking_id', $booking_id, PDO::PARAM_INT);
     $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
     $stmt->bindParam(':sender', $sender, PDO::PARAM_STR);
     $stmt->bindParam(':message', $message, PDO::PARAM_STR);
     $stmt->bindParam(':file_path', $filePath, PDO::PARAM_STR);
+    $stmt->bindParam(':is_unread', $is_unread, PDO::PARAM_INT);
     $stmt->execute();
 
     // Log successful save for debugging
-    error_log("Message saved successfully for booking_id=$booking_id by $sender");
+    error_log("Message saved successfully for booking_id=$booking_id by $sender with is_unread=$is_unread");
 
     // Return success response for AJAX
     echo json_encode(['success' => true]);
@@ -103,3 +107,17 @@ try {
     echo json_encode(['success' => false, 'message' => 'Error saving message: ' . $e->getMessage()]);
     exit;
 }
+?>
+
+CREATE TABLE chat_messages (
+    message_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    user_id INT NOT NULL,
+    sender VARCHAR(10) NOT NULL, -- 'user' or 'admin'
+    message TEXT NOT NULL,
+    file_path VARCHAR(255) DEFAULT NULL,
+    is_unread TINYINT(1) DEFAULT 0, -- Default to 0 (read)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES event_bookings(booking_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
