@@ -12,13 +12,22 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-
 try {
+    // Fetch user details
     $stmt = $db->prepare("SELECT user_id, first_name, middle_name, last_name, email, profile_picture, address, contact_no, birthdate, gender FROM users WHERE user_id = :user_id");
     $stmt->bindParam(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
     $stmt->execute();
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    if (!$user) {
+        echo "<script>
+            alert('User not found.');
+            window.location.href = 'auth/logout_user.php';
+        </script>";
+        exit;
+    }
+
+    // Calculate age
     $age = null;
     if (!empty($user['birthdate'])) {
         $birthdate = new DateTime($user['birthdate']);
@@ -26,7 +35,7 @@ try {
         $age = $today->diff($birthdate)->y;
     }
 
-    // Fetch all bookings (no status exclusion)
+    // Fetch all bookings for the logged-in user
     $bookingStmt = $db->prepare("
         SELECT eb.booking_id, eb.package_id, eb.event_type, eb.event_date, eb.event_time, eb.booking_status, eb.created_at, 
                cp.category, cp.price 
@@ -43,11 +52,12 @@ try {
     die("Error fetching data: " . $e->getMessage());
 }
 
+// Function to format category names
 function formatCategory($category) {
     return str_replace('Catering', 'Party Catering', $category);
 }
 
-// Current date for comparison
+// Current date for comparison (used for cancellation logic)
 $currentDate = new DateTime();
 ?>
 
@@ -99,6 +109,43 @@ $currentDate = new DateTime();
             font-weight: bold;
             border-bottom: 2px solid #007bff;
         }
+        /* Status styling */
+        .status-pending {
+            background-color: #ffc107;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .status-on-process {
+            background-color: #007bff;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .status-approved {
+            background-color: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .status-rejected {
+            background-color: #dc3545;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .status-cancelled {
+            background-color: #6c757d;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .status-completed {
+            background-color: #17a2b8;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
     </style>
 </head>
 <body class="light-theme">
@@ -111,7 +158,7 @@ $currentDate = new DateTime();
                 <h1 class="display-5 mb-5" style="font-family: 'Playball', cursive;">Welcome Back, <?php echo htmlspecialchars($user['first_name']); ?>!</h1>
                 <button type="button" class="btn btn-primary mt-3 me-2" data-bs-toggle="modal" data-bs-target="#updateProfileModal">
                     <i class="fas fa-edit me-2"></i> Update Profile
-                
+                </button>
             </div>
             <div class="row justify-content-center">
                 <div class="col-12 col-md-8 col-lg-6">
@@ -170,6 +217,7 @@ $currentDate = new DateTime();
             <div class="text-center mb-4">
                 <button class="btn status-filter-btn me-2" data-status-filter="all">All Statuses</button>
                 <button class="btn status-filter-btn me-2" data-status-filter="pending">Pending</button>
+                <button class="btn status-filter-btn me-2" data-status-filter="on_process">On Process</button>
                 <button class="btn status-filter-btn me-2" data-status-filter="approved">Approved</button>
                 <button class="btn status-filter-btn me-2" data-status-filter="rejected">Rejected</button>
                 <button class="btn status-filter-btn me-2" data-status-filter="cancelled">Cancelled</button>
@@ -182,9 +230,8 @@ $currentDate = new DateTime();
                             <p class="text-center text-muted">No recent bookings found.</p>
                         <?php else: ?>
                             <?php foreach ($allBookings as $booking): 
-
                                 // Fetch unread message count for this booking (from admin)
-                                $chatStmt = $db->prepare("SELECT COUNT(*) as unread FROM chat_messages WHERE order_id =  :booking_id  AND user_id =  :user_id AND is_unread != 0");
+                                $chatStmt = $db->prepare("SELECT COUNT(*) as unread FROM chat_messages WHERE order_id = :booking_id AND user_id = :user_id AND sender = 'admin' AND is_unread != 0");
                                 $chatStmt->execute([
                                     ':booking_id' => $booking['booking_id'],
                                     ':user_id' => $user_id
@@ -208,14 +255,15 @@ $currentDate = new DateTime();
                                     <p>
                                         <strong>Status:</strong> 
                                         <span class="status <?php 
-                                            echo $booking['booking_status'] === 'approved' ? 'status-approved' : 
-                                                ($booking['booking_status'] === 'pending' ? 'status-pending' : 
-                                                ($booking['booking_status'] === 'completed' ? 'status-completed' : 
-                                                ($booking['booking_status'] === 'cancelled' ? 'status-cancelled' : 'status-rejected'))); ?>">
-                                            <?php echo ucfirst(htmlspecialchars($booking['booking_status'])); ?>
+                                            echo $booking['booking_status'] === 'pending' ? 'status-pending' : 
+                                                ($booking['booking_status'] === 'on_process' ? 'status-on-process' : 
+                                                ($booking['booking_status'] === 'approved' ? 'status-approved' : 
+                                                ($booking['booking_status'] === 'rejected' ? 'status-rejected' : 
+                                                ($booking['booking_status'] === 'cancelled' ? 'status-cancelled' : 'status-completed')))); ?>">
+                                            <?php echo ucfirst(str_replace('_', ' ', htmlspecialchars($booking['booking_status']))); ?>
                                         </span>
                                     </p>
-                                    <?php if ($booking['booking_status'] === 'approved'): ?>
+                                    <?php if ($booking['booking_status'] === 'approved' || $booking['booking_status'] === 'on_process'): ?>
                                         <a href="chat_user.php?booking_id=<?php echo $booking['booking_id']; ?>" class="btn btn-secondary btn-sm chat-btn">
                                             <i class="fas fa-comments"></i> Chat
                                             <?php if ($unreadCount != 0): ?>
@@ -345,6 +393,8 @@ $currentDate = new DateTime();
         // Combined filter function
         function applyFilters(categoryFilter, statusFilter) {
             const cards = document.querySelectorAll('.booking-card');
+            let visibleCards = 0;
+
             cards.forEach(card => {
                 const cardCategory = card.getAttribute('data-type').toLowerCase().trim();
                 const cardStatus = card.getAttribute('data-status').toLowerCase().trim();
@@ -352,8 +402,26 @@ $currentDate = new DateTime();
                 const categoryMatch = (categoryFilter === 'all' || cardCategory === categoryFilter);
                 const statusMatch = (statusFilter === null || statusFilter === 'all' || cardStatus === statusFilter);
                 
-                card.style.display = (categoryMatch && statusMatch) ? 'block' : 'none';
+                if (categoryMatch && statusMatch) {
+                    card.style.display = 'block';
+                    visibleCards++;
+                } else {
+                    card.style.display = 'none';
+                }
             });
+
+            // Show message if no bookings match the filter
+            const container = document.getElementById('bookings-container');
+            const noBookingsMessage = container.querySelector('.no-bookings-message');
+            if (noBookingsMessage) {
+                noBookingsMessage.remove();
+            }
+            if (visibleCards === 0) {
+                const message = document.createElement('p');
+                message.className = 'text-center text-muted no-bookings-message';
+                message.textContent = 'No bookings found for this filter.';
+                container.appendChild(message);
+            }
         }
 
         // Initialize with "All" category and "All" status

@@ -1,7 +1,7 @@
 <?php
 require '../db.php';
 
-$whereClause = "WHERE eb.booking_status = 'approved'";
+$whereClause = "WHERE eb.booking_status = 'on_process'";
 $params = [];
 if (isset($_GET['booking_id'])) {
     $whereClause .= " AND eb.booking_id = :booking_id";
@@ -22,7 +22,7 @@ try {
     $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     if (empty($bookings)) {
-        echo "<tr><td colspan='11' class='text-center text-muted'>No approved bookings found.</td></tr>";
+        echo "<tr><td colspan='11' class='text-center text-muted'>No on process bookings found.</td></tr>";
     } else {
         foreach ($bookings as $row) {
             // Main row content
@@ -90,7 +90,7 @@ try {
         }
     }
 } catch (PDOException $e) {
-    error_log("Error fetching approved bookings: " . $e->getMessage());
+    error_log("Error fetching on process bookings: " . $e->getMessage());
     echo "<tr><td colspan='11' class='text-center text-muted'>Error loading bookings.</td></tr>";
 }
 

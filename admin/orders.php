@@ -11,10 +11,10 @@ if (!isset($_SESSION['admin_id'])) {
 try {
     $stmt = $db->query("SELECT booking_status, COUNT(*) as count FROM event_bookings GROUP BY booking_status");
     $counts = array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'count', 'booking_status');
-    $counts = array_merge(['pending' => 0, 'approved' => 0, 'rejected' => 0, 'completed' => 0, 'cancelled' => 0], $counts);
+    $counts = array_merge(['pending' => 0, 'on_process' => 0, 'approved' => 0, 'rejected' => 0, 'completed' => 0, 'cancelled' => 0], $counts);
 } catch (PDOException $e) {
     error_log("Error fetching status counts: " . $e->getMessage());
-    $counts = ['pending' => 0, 'approved' => 0, 'rejected' => 0, 'completed' => 0, 'cancelled' => 0];
+    $counts = ['pending' => 0, 'on_process' => 0, 'approved' => 0, 'rejected' => 0, 'completed' => 0, 'cancelled' => 0];
 }
 
 // Get the booking_id to highlight from the URL
@@ -23,6 +23,7 @@ $highlightBookingId = isset($_GET['highlight']) ? (int)$_GET['highlight'] : null
 function getStatusClass($status) {
     return match ($status) {
         'pending' => 'bg-warning text-dark',
+        'on_process' => 'bg-primary text-white', // New status class for "On Process"
         'approved' => 'bg-success text-white',
         'rejected' => 'bg-danger text-white',
         'completed' => 'bg-info text-white',
@@ -45,6 +46,7 @@ function getStatusClass($status) {
         .card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 30px; }
         .card-header { color: white; border-radius: 12px 12px 0 0; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
         .pending-card-header { background: #007bff; }
+        .on-process-card-header { background: #17a2b8; } /* New header class for "On Process" */
         .approved-card-header { background: #28a745; }
         .rejected-card-header { background: #dc3545; }
         .completed-card-header { background: #17a2b8; }
@@ -174,6 +176,7 @@ function getStatusClass($status) {
             <h1 class="mb-4">Orders Management</h1>
             <div class="status-counts" id="statusCounts">
                 <span class="badge bg-warning text-dark">Pending: <?=$counts['pending']?></span>
+                <span class="badge bg-primary text-white">On Process: <?=$counts['on_process']?></span>
                 <span class="badge bg-success text-white">Approved: <?=$counts['approved']?></span>
                 <span class="badge bg-danger text-white">Rejected: <?=$counts['rejected']?></span>
                 <span class="badge bg-info text-white">Completed: <?=$counts['completed']?></span>
@@ -184,6 +187,7 @@ function getStatusClass($status) {
             <?php
             $cards = [
                 'pending' => ['Pending Bookings', 'pending-card-header'],
+                'on_process' => ['On Process Bookings', 'on-process-card-header'], // New section for "On Process"
                 'approved' => ['Approved Bookings', 'approved-card-header'],
                 'rejected' => ['Rejected Bookings', 'rejected-card-header'],
                 'completed' => ['Completed Bookings', 'completed-card-header'],
@@ -232,6 +236,7 @@ function getStatusClass($status) {
     <script>
         const statusMap = {
             'pending': '#pendingBookingsBody',
+            'on_process': '#on_processBookingsBody', // Added for "On Process"
             'approved': '#approvedBookingsBody',
             'rejected': '#rejectedBookingsBody',
             'completed': '#completedBookingsBody',
@@ -347,7 +352,7 @@ function getStatusClass($status) {
         }
 
         function loadInitialBookings() {
-            const statuses = ['pending', 'approved', 'rejected', 'completed', 'cancelled'];
+            const statuses = ['pending', 'on_process', 'approved', 'rejected', 'completed', 'cancelled'];
             statuses.forEach(status => {
                 $.ajax({
                     url: `fetch_${status}_bookings.php`,

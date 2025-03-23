@@ -22,7 +22,7 @@ try {
     $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     if (empty($bookings)) {
-        echo "<tr><td colspan='10' class='text-center text-muted'>No pending bookings found.</td></tr>";
+        echo "<tr><td colspan='11' class='text-center text-muted'>No pending bookings found.</td></tr>";
     } else {
         foreach ($bookings as $row) {
             // Main row content
@@ -53,45 +53,51 @@ try {
             ";
 
             // Main row
-            echo "<tr data-booking-id='{$row['booking_id']}'>
-                <td><i class='fas fa-chevron-down expand-btn'></i></td>
-                <td>" . htmlspecialchars($row['booking_id']) . "</td>
-                <td class='customer-col'>" . $customerName . "</td>
-                <td>" . htmlspecialchars($row['package_name']) . "</td>
-                <td>" . htmlspecialchars($row['package_category']) . "</td>
-                <td>" . htmlspecialchars($row['number_of_guests'] ?? 'N/A') . "</td>
-                <td class='description-col'>" . $descContent . "</td>
-                <td><form class='status-form' data-id='{$row['booking_id']}'>
-                    <input type='hidden' name='booking_id' value='{$row['booking_id']}'>
-                    <select name='booking_status' class='status-btn " . getStatusClass($row['booking_status']) . "' onchange='updateStatus(event, this)'>
-                        <option value='pending' " . ($row['booking_status'] === 'pending' ? 'selected' : '') . ">Pending</option>
-                        <option value='approved' " . ($row['booking_status'] === 'approved' ? 'selected' : '') . ">Approved</option>
-                        <option value='rejected' " . ($row['booking_status'] === 'rejected' ? 'selected' : '') . ">Rejected</option>
-                        <option value='completed' " . ($row['booking_status'] === 'completed' ? 'selected' : '') . ">Completed</option>
-                        <option value='cancelled' " . ($row['booking_status'] === 'cancelled' ? 'selected' : '') . ">Cancelled</option>
-                    </select></form></td>
-                <td><a href='chat.php?booking_id={$row['booking_id']}' class='btn btn-secondary btn-sm'><i class='fas fa-comments'></i></a></td>
-                <td>₱" . number_format($row['total_amount'], 2) . "</td>
-                <td>
-                    <a href='view_order.php?id={$row['booking_id']}' class='btn btn-info btn-sm'><i class='fas fa-eye'></i></a>
-                    <a href='update_booking.php?id={$row['booking_id']}' class='btn btn-primary btn-sm'><i class='fas fa-edit'></i></a>
-                </td>
-            </tr>";
+            echo "<tr data-booking-id='{$row['booking_id']}'>";
+            echo "<td><i class='fas fa-chevron-down expand-btn'></i></td>";
+            echo "<td>" . htmlspecialchars($row['booking_id']) . "</td>";
+            echo "<td class='customer-col'>" . $customerName . "</td>";
+            echo "<td>" . htmlspecialchars($row['package_name'] ?? 'Custom') . "</td>";
+            echo "<td>" . htmlspecialchars($row['package_category'] ?? 'N/A') . "</td>";
+            echo "<td>" . htmlspecialchars($row['number_of_guests'] ?? 'N/A') . "</td>";
+            echo "<td class='description-col'>" . $descContent . "</td>";
+            echo "<td><form class='status-form' data-id='{$row['booking_id']}'>";
+            echo "<input type='hidden' name='booking_id' value='{$row['booking_id']}'>";
+            echo "<select name='booking_status' class='status-btn " . getStatusClass($row['booking_status']) . "' onchange='updateStatus(event, this)'>";
+            echo "<option value='pending' " . ($row['booking_status'] === 'pending' ? 'selected' : '') . ">Pending</option>";
+            echo "<option value='on_process' " . ($row['booking_status'] === 'on_process' ? 'selected' : '') . ">On Process</option>";
+            echo "<option value='approved' " . ($row['booking_status'] === 'approved' ? 'selected' : '') . ">Approved</option>";
+            echo "<option value='rejected' " . ($row['booking_status'] === 'rejected' ? 'selected' : '') . ">Rejected</option>";
+            echo "<option value='completed' " . ($row['booking_status'] === 'completed' ? 'selected' : '') . ">Completed</option>";
+            echo "<option value='cancelled' " . ($row['booking_status'] === 'cancelled' ? 'selected' : '') . ">Cancelled</option>";
+            echo "</select></form></td>";
+            echo "<td>";
+            if (in_array($row['booking_status'], ['approved', 'on_process'])) {
+                echo "<a href='chat.php?booking_id={$row['booking_id']}' class='btn btn-secondary btn-sm'><i class='fas fa-comments'></i></a>";
+            }
+            echo "</td>";
+            echo "<td>₱" . number_format($row['total_amount'], 2) . "</td>";
+            echo "<td>";
+            echo "<a href='view_order.php?id={$row['booking_id']}' class='btn btn-info btn-sm'><i class='fas fa-eye'></i></a> ";
+            echo "<a href='update_booking.php?id={$row['booking_id']}' class='btn btn-primary btn-sm'><i class='fas fa-edit'></i></a>";
+            echo "</td>";
+            echo "</tr>";
 
             // Details row (hidden by default)
-            echo "<tr class='details-row'>
-                <td colspan='10'>" . $detailsContent . "</td>
-            </tr>";
+            echo "<tr class='details-row'>";
+            echo "<td colspan='11'>" . $detailsContent . "</td>";
+            echo "</tr>";
         }
     }
 } catch (PDOException $e) {
     error_log("Error fetching pending bookings: " . $e->getMessage());
-    echo "<tr><td colspan='10' class='text-center text-muted'>Error loading bookings.</td></tr>";
+    echo "<tr><td colspan='11' class='text-center text-muted'>Error loading bookings.</td></tr>";
 }
 
 function getStatusClass($status) {
     return match ($status) {
         'pending' => 'bg-warning text-dark',
+        'on_process' => 'bg-primary text-white', // Added for "On Process"
         'approved' => 'bg-success text-white',
         'rejected' => 'bg-danger text-white',
         'completed' => 'bg-info text-white',
