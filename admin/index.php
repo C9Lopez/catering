@@ -237,7 +237,7 @@ try {
                     const props = info.event.extendedProps;
                     const modalBody = `
                         <h6>Booking Details</h6>
-                        <p><strong>Booking ID:</strong> ${info.event.id}</p>
+                        
                         <p><strong>Event Type:</strong> ${props.event_type || 'N/A'}</p>
                         <p><strong>Package:</strong> ${props.package}</p>
                         <p><strong>Location:</strong> ${props.location}</p>
