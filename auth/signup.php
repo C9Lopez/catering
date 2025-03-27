@@ -190,7 +190,7 @@ if (isset($_SESSION[$lockout_key]) && time() < $_SESSION[$lockout_key]) {
                     </div>
                 </div>
                 <div class="mb-3 text-muted">
-                    By clicking "Start using Pochie Catering", you agree to the Web Site Terms of Use, Pochie Catering License Terms, and the Data Processing Addendum.
+                    By clicking "Start using Pochie Catering", you agree to the Web Site Terms of Use, Pochie Catering License Terms, and the Data Privacy.
                 </div>
                 <div class="d-grid">
                     <button type="submit" class="btn btn-primary">START USING POCHIE CATERING</button>
