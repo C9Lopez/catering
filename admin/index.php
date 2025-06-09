@@ -176,7 +176,7 @@ try {
                 <h5>Quick Actions</h5>
                 <a href="orders.php" class="btn btn-outline-primary btn-sm"><i class="fas fa-list"></i> View All Orders</a>
                 <a href="add_package.php" class="btn btn-outline-success btn-sm"><i class="fas fa-plus"></i> Add New Package</a>
-                <a href="announcements.php" class="btn btn-outline-info btn-sm"><i class="fas fa-bullhorn"></i> Manage Announcements</a>
+                <a href="announcement.php" class="btn btn-outline-info btn-sm"><i class="fas fa-bullhorn"></i> Manage Announcements</a>
             </div>
         </div>
     </div>

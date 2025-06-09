@@ -108,7 +108,7 @@ try {
     exit;
 }
 ?>
-
+<!-- 
 CREATE TABLE chat_messages (
     message_id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,
@@ -120,4 +120,4 @@ CREATE TABLE chat_messages (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (order_id) REFERENCES event_bookings(booking_id),
     FOREIGN KEY (user_id) REFERENCES users(user_id)
-);
+); -->

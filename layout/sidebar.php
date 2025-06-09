@@ -48,13 +48,13 @@ function isActive($pages) {
         </li>
         <li class="nav-item">
             <a href="../admin/orders.php" class="nav-link<?= isActive('orders.php') ?>">
-                <i class="fas fa-shopping-cart me-2"></i>
+            <i class="fas fa-calendar-check me-2"></i>
                 <span>Bookings</span>
             </a>
         </li>
         <li class="nav-item">
             <a href="../admin/menus.php" class="nav-link<?= isActive('menus.php') ?>">
-                <i class="fas fa-shopping-cart me-2"></i>
+            <i class="fas fa-utensils me-2"></i>
                 <span>Menus</span>
             </a>
         </li>
@@ -64,12 +64,12 @@ function isActive($pages) {
                 <span>Users</span>
             </a>
         </li>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a href="../admin/settings.php" class="nav-link<?= isActive('settings.php') ?>">
                 <i class="fas fa-cog me-2"></i>
                 <span>Settings</span>
             </a>
-        </li>
+        </li> -->
         <li class="nav-item">
             <a href="../auth/logout_admin.php" class="nav-link">
                 <i class="fas fa-sign-out-alt me-2"></i>

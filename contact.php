@@ -245,8 +245,8 @@
                 <div class="col-lg-6">
                     <div class="glass-card">
                         <h2 class="contact-title mb-4">Send Us a Message</h2>
-                        <form class="contact-form">
-                            <div class="row g-3">
+                        <form class="contact-form" action="mailto:bongbongcastro19@gmail.com" method="POST" enctype="text/plain">
+                        <div class="row g-3">
                                 <div class="col-md-6">
                                     <input type="text" class="form-control" placeholder="Your Name">
                                 </div>

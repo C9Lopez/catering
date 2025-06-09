@@ -72,10 +72,7 @@ try {
                     </select></form></td>
                 <td><a href='chat.php?booking_id={$row['booking_id']}' class='btn btn-secondary btn-sm'><i class='fas fa-comments'></i></a></td>
                 <td>₱" . number_format($row['total_amount'], 2) . "</td>
-                <td>
-                    <a href='view_order.php?id={$row['booking_id']}' class='btn btn-info btn-sm'><i class='fas fa-eye'></i></a>
-                    <a href='update_booking.php?id={$row['booking_id']}' class='btn btn-primary btn-sm'><i class='fas fa-edit'></i></a>
-                </td>
+
             </tr>";
 
             // Details row (hidden by default)

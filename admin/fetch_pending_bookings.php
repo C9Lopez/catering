@@ -77,10 +77,7 @@ try {
             }
             echo "</td>";
             echo "<td>₱" . number_format($row['total_amount'], 2) . "</td>";
-            echo "<td>";
-            echo "<a href='view_order.php?id={$row['booking_id']}' class='btn btn-info btn-sm'><i class='fas fa-eye'></i></a> ";
-            echo "<a href='update_booking.php?id={$row['booking_id']}' class='btn btn-primary btn-sm'><i class='fas fa-edit'></i></a>";
-            echo "</td>";
+
             echo "</tr>";
 
             // Details row (hidden by default)

@@ -217,7 +217,7 @@ function getStatusClass($status) {
                                         <th>Status</th>
                                         <th>Chat</th>
                                         <th>Amount</th>
-                                        <th>Actions</th>
+                                   
                                     </tr>
                                 </thead>
                                 <tbody id='{$status}BookingsBody'></tbody>

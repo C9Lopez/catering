@@ -48,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                 $mail->Port = 587;
 
-                $mail->setFrom('myemail@gmail.com', 'Pochie Catering');
+                $mail->setFrom('bongbongcastro19@gmail.com', 'Pochie Catering');
                 $mail->addAddress($email);
                 $mail->isHTML(true);
                 $mail->Subject = 'Password Reset Code';
@@ -65,6 +65,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 }
+
+if (!empty($errorMsg)) echo "<p style='color:red;'>$errorMsg</p>";
+if (!empty($successMsg)) echo "<p style='color:green;'>$successMsg</p>";
+
 ?>
 
 <!DOCTYPE html>

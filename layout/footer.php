@@ -1,4 +1,17 @@
 <!-- Footer Start -->
+<?php
+// Get the current URL path
+$currentPath = $_SERVER['REQUEST_URI'];
+
+// Check if the user is inside "catering-service" directory
+$isInsideCateringService = strpos($currentPath, '/catering-service/') !== false;
+
+// Define base paths dynamically
+$basePath = $isInsideCateringService ? '../' : './';
+$cateringBase = $isInsideCateringService ? './' : './catering-service/';
+
+?>
+
 <div class="container-fluid footer py-6 bg-dark text-white wow fadeInUp" data-wow-delay="0.1s">
     <div class="container">
         <div class="row g-4">
@@ -32,12 +45,12 @@
             <div class="col-lg-3 col-md-6">
                 <h4 class="mb-4">Social Gallery</h4>
                 <div class="row g-2">
-                    <div class="col-4"><img src="../img/menu-01.jpg" class="img-fluid rounded-circle border border-primary p-1" alt=""></div>
-                    <div class="col-4"><img src="../img/menu-02.jpg" class="img-fluid rounded-circle border border-primary p-1" alt=""></div>
-                    <div class="col-4"><img src="../img/menu-03.jpg" class="img-fluid rounded-circle border border-primary p-1" alt=""></div>
-                    <div class="col-4"><img src="../img/menu-04.jpg" class="img-fluid rounded-circle border border-primary p-1" alt=""></div>
-                    <div class="col-4"><img src="../img/menu-05.jpg" class="img-fluid rounded-circle border border-primary p-1" alt=""></div>
-                    <div class="col-4"><img src="../img/menu-06.jpg" class="img-fluid rounded-circle border border-primary p-1" alt=""></div>
+                    <div class="col-4"><img src="<?= $basePath ?>img/menu-01.jpg" class="img-fluid rounded-circle border border-primary p-1" alt=""></div>
+                    <div class="col-4"><img src="<?= $basePath ?>/img/menu-02.jpg" class="img-fluid rounded-circle border border-primary p-1" alt=""></div>
+                    <div class="col-4"><img src="<?= $basePath ?>/img/menu-03.jpg" class="img-fluid rounded-circle border border-primary p-1" alt=""></div>
+                    <div class="col-4"><img src="<?= $basePath ?>/img/menu-04.jpg" class="img-fluid rounded-circle border border-primary p-1" alt=""></div>
+                    <div class="col-4"><img src="<?= $basePath ?>/img/menu-05.jpg" class="img-fluid rounded-circle border border-primary p-1" alt=""></div>
+                    <div class="col-4"><img src="<?= $basePath ?>/img/menu-06.jpg" class="img-fluid rounded-circle border border-primary p-1" alt=""></div>
                 </div>
             </div>
         </div>
