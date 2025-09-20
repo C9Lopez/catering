@@ -1,7 +1,7 @@
 <?php
 require 'db.php'; // Include database connection
 session_start();
-
+// phpinfo();
 // Fetch all live announcements for AJAX (store in JSON for client-side use)
 try {
     $stmt = $db->prepare("SELECT * FROM announcements WHERE status = 'live' ORDER BY created_at DESC");
