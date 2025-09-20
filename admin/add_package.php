@@ -129,7 +129,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="btn-group">
                         <button type="submit" class="btn btn-primary">Add Package</button>
                         <a href="packages.php" class="btn btn-secondary">Cancel</a>
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addOptionModal">Add New Item/Option</button>
                     </div>
+                </form>
+            </div>
+
+            <!-- Add Option Modal -->
+            <div class="modal fade" id="addOptionModal" tabindex="-1" aria-labelledby="addOptionModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form method="post" action="customization_options.php" enctype="multipart/form-data">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addOptionModalLabel">Add New Item/Option</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="action" value="add">
+                                <!-- Category is now automatic and hidden from the modal -->
+                                <?php
+                                // Map package type to category name (adjust as needed)
+                                $packageTypeToCategory = [
+                                    'Wedding Catering' => 'Wedding',
+                                    'Debut Catering' => 'Debut',
+                                    'Corporate Catering' => 'Corporate',
+                                    'Private Catering' => 'Private',
+                                    'Childrens Party Catering' => 'Children',
+                                    'Special Event Catering' => 'Special Event',
+                                ];
+                                $currentType = $_POST['category'] ?? '';
+                                $categories = $db->query('SELECT * FROM customization_categories WHERE status="active"')->fetchAll(PDO::FETCH_ASSOC);
+                                $selectedCategoryId = '';
+                                foreach ($categories as $cat) {
+                                    if (strcasecmp($cat['category_name'], $packageTypeToCategory[$currentType] ?? $currentType) === 0) {
+                                        $selectedCategoryId = $cat['category_id'];
+                                        break;
+                                    }
+                                }
+                                ?>
+                                <input type="hidden" name="category_id" value="<?php echo htmlspecialchars($selectedCategoryId); ?>">
+                                <div class="mb-3">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" name="option_name" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Description</label>
+                                    <input type="text" name="description" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Price</label>
+                                    <input type="number" name="price" class="form-control" min="0" step="0.01" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Max Qty</label>
+                                    <input type="number" name="max_quantity" class="form-control" min="1" value="1" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Image</label>
+                                    <input type="file" name="image" class="form-control">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-success">Add Item/Option</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
                 </form>
             </div>
         </div>

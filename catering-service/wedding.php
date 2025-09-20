@@ -389,7 +389,7 @@ try {
                     <h5 class="modal-title" id="bookingModalLabel">Book Your Wedding Catering</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" style="max-height:70vh; overflow-y:auto;">
                     <form id="bookingForm" method="POST">
                         <input type="hidden" name="package_id" id="modalPackageId">
                         <input type="hidden" name="customizations" id="modalCustomizations">
@@ -461,7 +461,6 @@ try {
         new WOW().init();
         
         // Global variables
-        const packageAddons = <?php echo $addons_json; ?>;
         let currentCustomizations = {
             packageId: null,
             packageName: null,
@@ -749,9 +748,8 @@ try {
             $(`#features-${packageId}`).toggleClass('show');
         }
 
-        // Open customization modal
+        // Open customization modal (fetch options for this package only)
         function openCustomizationModal(packageId, packageName, basePrice, numberOfGuests) {
-            // Reset current customizations
             currentCustomizations = {
                 packageId: packageId,
                 packageName: packageName,
@@ -759,129 +757,112 @@ try {
                 addons: {},
                 total: 0
             };
-            
-            // Update modal title and base price
             $('#customPackageName').text(packageName);
             $('#basePriceDisplay').text('₱' + parseFloat(basePrice).toLocaleString('en-US'));
             $('#basePrice').val(basePrice);
-            
-            // Clear previous addons
             $('#foodAddons').empty();
             $('#serviceAddons').empty();
             $('#decorationAddons').empty();
-            
-            // Filter and display addons by category
-            const foodAddons = packageAddons.filter(addon => addon.category === 'Food');
-            const serviceAddons = packageAddons.filter(addon => addon.category === 'Service');
-            const decorationAddons = packageAddons.filter(addon => addon.category === 'Decoration');
-            
-            // Populate food addons
-            foodAddons.forEach(addon => {
-                $('#foodAddons').append(createAddonItem(addon));
+            // Fetch options for this package from backend
+            $.ajax({
+                url: 'fetch_package_customizations.php',
+                type: 'GET',
+                data: { package_id: packageId },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success && response.options.length > 0) {
+                        // Group by category_type
+                        const food = response.options.filter(opt => opt.category_type === 'food');
+                        const service = response.options.filter(opt => opt.category_type === 'service');
+                        const decoration = response.options.filter(opt => opt.category_type === 'decoration');
+                        food.forEach(opt => {
+                            $('#foodAddons').append(createOptionItem(opt));
+                        });
+                        service.forEach(opt => {
+                            $('#serviceAddons').append(createOptionItem(opt));
+                        });
+                        decoration.forEach(opt => {
+                            $('#decorationAddons').append(createOptionItem(opt));
+                        });
+                    } else {
+                        $('#foodAddons').html('<div class="text-muted">No food options available.</div>');
+                        $('#serviceAddons').html('<div class="text-muted">No service options available.</div>');
+                        $('#decorationAddons').html('<div class="text-muted">No decoration options available.</div>');
+                    }
+                    updateSummary();
+                    $('#customizationModal').modal('show');
+                },
+                error: function() {
+                    $('#foodAddons').html('<div class="text-danger">Error loading options.</div>');
+                    $('#serviceAddons').html('');
+                    $('#decorationAddons').html('');
+                }
             });
-            
-            // Populate service addons
-            serviceAddons.forEach(addon => {
-                $('#serviceAddons').append(createAddonItem(addon));
-            });
-            
-            // Populate decoration addons
-            decorationAddons.forEach(addon => {
-                $('#decorationAddons').append(createAddonItem(addon));
-            });
-            
-            // Update summary
-            updateSummary();
-            
-            // Show modal
-            $('#customizationModal').modal('show');
         }
-        
-        // Create addon item HTML
-        function createAddonItem(addon) {
+
+        // Create option item HTML for customization
+        function createOptionItem(opt) {
             return `
                 <div class="addon-item">
                     <div class="addon-info">
-                        <h6 class="mb-1">${addon.name}</h6>
-                        <p class="mb-0 small text-muted">${addon.description}</p>
+                        <h6 class="mb-1">${opt.option_name}
+                            ${opt.description ? `<span class='ms-1' data-bs-toggle='tooltip' title='${opt.description}'><i class='fa fa-info-circle text-secondary'></i></span>` : ''}
+                        </h6>
                     </div>
                     <div class="addon-controls d-flex align-items-center">
-                        <span class="addon-price">₱${parseFloat(addon.price).toLocaleString('en-US')}</span>
-                        <input type="number" class="form-control form-control-sm addon-quantity" 
-                            id="addon-${addon.addon_id}" 
-                            min="0" 
-                            max="${addon.max_quantity || 10}" 
+                        <span class="addon-price">₱${parseFloat(opt.price).toLocaleString('en-US')}</span>
+                        <input type="number" class="form-control form-control-sm addon-quantity"
+                            id="addon-${opt.option_id}"
+                            min="0"
+                            max="${opt.max_quantity || 10}"
                             value="0"
-                            onchange="updateAddonQuantity(${addon.addon_id}, ${addon.price})">
+                            onchange="updateAddonQuantity(${opt.option_id}, ${opt.price}, '${opt.option_name.replace(/'/g, "\\'")}')">
                     </div>
                 </div>
             `;
         }
-        
-        // Update addon quantity
-        function updateAddonQuantity(addonId, price) {
-            const quantity = parseInt($(`#addon-${addonId}`).val()) || 0;
-            
+
+        // Update addon quantity (for options)
+        function updateAddonQuantity(addonId, price, label) {
+            const $input = $(`#addon-${addonId}`);
+            const max = parseInt($input.attr('max')) || 10;
+            let quantity = parseInt($input.val()) || 0;
+            if (quantity > max) quantity = max;
+            if (quantity < 0) quantity = 0;
+            $input.val(quantity); // enforce visually
             if (quantity > 0) {
                 currentCustomizations.addons[addonId] = {
                     quantity: quantity,
                     price: price,
-                    total: quantity * price
+                    total: quantity * price,
+                    label: label
                 };
             } else {
                 delete currentCustomizations.addons[addonId];
             }
-            
             updateSummary();
         }
-        
+
         // Update order summary
         function updateSummary() {
-            // Calculate total for addons
             let addonsTotal = 0;
-            Object.keys(currentCustomizations.addons).forEach(addonId => {
-                addonsTotal += currentCustomizations.addons[addonId].total;
-            });
-            
-            // Update current customizations total
-            currentCustomizations.total = addonsTotal;
-            
-            // Calculate grand total
-            const grandTotal = parseFloat(currentCustomizations.basePrice) + addonsTotal;
-            
-            // Update summary items
             let summaryHTML = `
                 <div class="summary-item">
                     <span>Base Package:</span>
                     <span>₱${parseFloat(currentCustomizations.basePrice).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
                 </div>
             `;
-            
-            // Add addons to summary
-            Object.keys(currentCustomizations.addons).forEach(addonId => {
-                const addon = packageAddons.find(a => a.addon_id == addonId);
-                const addonData = currentCustomizations.addons[addonId];
-                
-                summaryHTML += `
-                    <div class="summary-item">
-                        <span>${addon.name} (x${addonData.quantity}):</span>
-                        <span>₱${addonData.total.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
-                    </div>
-                `;
+            Object.values(currentCustomizations.addons).forEach(addon => {
+                summaryHTML += `<div class="summary-item"><span>${addon.label} (x${addon.quantity}):</span><span>₱${addon.total.toLocaleString('en-US', {minimumFractionDigits: 2})}</span></div>`;
+                addonsTotal += addon.total;
             });
-            
-            // Add customization fee if there are any addons
-            if (Object.keys(currentCustomizations.addons).length > 0) {
-                summaryHTML += `
-                    <div class="summary-item">
-                        <span>Customization Fee:</span>
-                        <span>₱${addonsTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
-                    </div>
-                `;
+            if (addonsTotal > 0) {
+                summaryHTML += `<div class="summary-item"><span>Customization Fee:</span><span>₱${addonsTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</span></div>`;
             }
-            
+            const grandTotal = parseFloat(currentCustomizations.basePrice) + addonsTotal;
             $('#summaryItems').html(summaryHTML);
             $('#totalPriceDisplay').text('₱' + grandTotal.toLocaleString('en-US', {minimumFractionDigits: 2}));
+            currentCustomizations.total = addonsTotal;
         }
         
         // Proceed to booking from customization
