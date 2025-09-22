@@ -3,19 +3,19 @@ session_start();
 
 require '../db.php';
 
-// Fetch menus for wedding service type
+// Fetch menus for wedding service type (join with categories)
 try {
-    $stmt = $db->prepare("SELECT * FROM menus WHERE service_type = 'wedding' ORDER BY category");
+    $stmt = $db->prepare("SELECT m.*, c.category_name FROM menus m LEFT JOIN menu_categories c ON m.category_id = c.category_id WHERE m.service_type = 'wedding' AND m.status = 'active' ORDER BY c.category_name, m.title");
     $stmt->execute();
     $menus = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo '<div class="alert alert-warning">Unable to load menus</div>';
 }
 
-// Group menus by category
+// Group menus by category_name
 $grouped_menus = [];
 foreach ($menus as $menu) {
-    $grouped_menus[$menu['category']][] = $menu;
+    $grouped_menus[$menu['category_name']][] = $menu;
 }
 ?>
 
@@ -77,15 +77,28 @@ foreach ($menus as $menu) {
         <div class="container">
             <?php foreach ($grouped_menus as $category => $items): ?>
                 <div class="mb-5">
-                    <h2 class="display-5 mb-4"><?php echo $category; ?></h2>
+                    <h2 class="display-5 mb-4"><?php echo htmlspecialchars($category); ?></h2>
                     <div class="row g-4">
                         <?php foreach ($items as $item): ?>
                             <div class="col-md-4">
                                 <div class="card h-100 theme-card">
-                                    <img src="../admin/uploads/<?php echo basename($item['image_path']); ?>" class="card-img-top img-fluid" style="height: 200px; object-fit: cover;" alt="<?php echo htmlspecialchars($item['title']); ?>">
+                                    <?php
+                                    $image_path = $item['image_path'];
+                                    // Fix the image path - remove any './' prefix and ensure it's relative to admin/uploads
+                                    if (strpos($image_path, './uploads/') === 0) {
+                                        $image_path = '../admin/uploads/' . substr($image_path, 10);
+                                    } elseif (strpos($image_path, 'uploads/') === 0) {
+                                        $image_path = '../admin/uploads/' . substr($image_path, 8);
+                                    }
+                                    ?>
+                                    <img src="<?php echo htmlspecialchars($image_path); ?>" class="card-img-top img-fluid" style="height: 200px; object-fit: cover;" alt="<?php echo htmlspecialchars($item['title']); ?>">
                                     <div class="card-body">
                                         <h5 class="card-title theme-text"><?php echo htmlspecialchars($item['title']); ?></h5>
                                         <p class="card-text theme-text"><?php echo htmlspecialchars($item['description']); ?></p>
+                                        <div class="mt-2">
+                                            <!-- <span class="badge bg-info">₱<?php echo number_format($item['price'],2); ?></span>
+                                            <span class="badge bg-success">Max: <?php echo $item['max_quantity']; ?></span> -->
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -56,54 +56,37 @@ try {
     error_log($errorMsg);
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Admin Dashboard - Catering System</title>
+    <title>Admin Dashboard - CONVERT</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="../css/admin.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css' rel='stylesheet' />
     <style>
-        .main-content { padding: 20px; }
-        .dashboard-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: transform 0.2s; }
-        .dashboard-card:hover { transform: translateY(-5px); }
-        .fc-event { 
-            cursor: pointer; 
-            margin: 2px 0; 
-            padding: 5px; 
-            border-radius: 4px; 
-            font-size: 0.9rem; 
-        }
-        .fc-event-pending { background-color: #ffc107; color: #000; }
-        .fc-event-approved { background-color: #28a745; color: #fff; }
-        .fc-event-rejected { background-color: #dc3545; color: #fff; }
-        .fc-event-completed { background-color: #17a2b8; color: #fff; }
-        .fc-event-cancelled { background-color: #6c757d; color: #fff; }
-        #calendar { max-width: 100%; margin: 20px 0; }
-        .stat-icon { font-size: 2rem; color: #007bff; }
-        .quick-links { margin-top: 20px; }
-        .quick-links a { margin-right: 10px; }
-        .status-overview { background: #007bff; color: white; padding: 10px; border-radius: 8px; margin-bottom: 20px; }
-        .status-overview h5 { margin: 0; }
-        .status-overview .badge { margin-right: 10px; }
-        .modal-body p { margin-bottom: 10px; }
-        @media (max-width: 991.98px) {
-            .main-content {
-                padding-top: 60px; /* Avoid overlap with toggle button */
-            }
-        }
+        .fc-event { cursor: pointer; }
+        .fc-event-pending { background-color: #f59e0b; border-color: #f59e0b; }
+        .fc-event-approved { background-color: #10b981; border-color: #10b981; }
+        .fc-event-on_process { background-color: #3b82f6; border-color: #3b82f6; }
+        .fc-event-rejected, .fc-event-cancelled { background-color: #ef4444; border-color: #ef4444; }
+        .fc-event-completed { background-color: #6b7280; border-color: #6b7280; }
     </style>
 </head>
 <body class="admin-dashboard">
     <?php include '../layout/sidebar.php'; ?>
 
     <div class="main-content">
+        <header class="mobile-header">
+            <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+            <h2 class="mobile-header-title">Dashboard</h2>
+        </header>
+
         <div class="container-fluid">
-            <h1 class="mb-4">Admin Dashboard</h1>
+            <h1 class="mb-4">Dashboard</h1>
 
             <?php if (!empty($errorMsg)): ?>
                 <div class="alert alert-danger"><?php echo htmlspecialchars($errorMsg); ?></div>
@@ -111,79 +94,75 @@ try {
 
             <!-- Statistics Cards -->
             <div class="row">
-                <div class="col-md-4 mb-4">
-                    <div class="dashboard-card p-3 h-100">
-                        <div class="d-flex align-items-center mb-3">
-                            <i class="fas fa-box-open stat-icon me-3"></i>
-                            <h5 class="mb-0">Total Packages</h5>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="dashboard-card h-100">
+                        <div class="icon bg-primary-light"><i class="fas fa-box-open"></i></div>
+                        <div class="text">
+                            <h5>Total Packages</h5>
+                            <p class="display-4"><?php echo $totalPackages; ?></p>
                         </div>
-                        <p class="display-4 mb-3"><?php echo $totalPackages; ?></p>
-                        <a href="packages.php" class="btn btn-primary btn-block">
-                            <i class="fas fa-cog me-2"></i>Manage Packages
-                        </a>
                     </div>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <div class="dashboard-card p-3 h-100">
-                        <div class="d-flex align-items-center mb-3">
-                            <i class="fas fa-shopping-cart stat-icon me-3"></i>
-                            <h5 class="mb-0">Active Bookings</h5>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="dashboard-card h-100">
+                        <div class="icon bg-success-light"><i class="fas fa-calendar-check"></i></div>
+                        <div class="text">
+                            <h5>Active Bookings</h5>
+                            <p class="display-4"><?php echo $activeOrders; ?></p>
                         </div>
-                        <p class="display-4 mb-3"><?php echo $activeOrders; ?></p>
-                        <a href="orders.php" class="btn btn-primary btn-block">
-                            <i class="fas fa-eye me-2"></i>View Bookings
-                        </a>
                     </div>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <div class="dashboard-card p-3 h-100">
-                        <div class="d-flex align-items-center mb-3">
-                            <i class="fas fa-users stat-icon me-3"></i>
-                            <h5 class="mb-0">Registered Users</h5>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="dashboard-card h-100">
+                        <div class="icon bg-warning-light"><i class="fas fa-users"></i></div>
+                        <div class="text">
+                            <h5>Registered Users</h5>
+                            <p class="display-4"><?php echo $totalUsers; ?></p>
                         </div>
-                        <p class="display-4 mb-3"><?php echo $totalUsers; ?></p>
-                        <a href="users.php" class="btn btn-primary btn-block">
-                            <i class="fas fa-user-cog me-2"></i>Manage Users
-                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="dashboard-card h-100">
+                        <div class="icon bg-danger-light"><i class="fas fa-hourglass-half"></i></div>
+                        <div class="text">
+                            <h5>Pending Bookings</h5>
+                            <p class="display-4"><?php echo $statusCounts['pending']; ?></p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Booking Status Summary -->
-            <div class="status-overview">
-                <h5>Booking Status Overview</h5>
-                <div>
-                    <span class="badge bg-warning text-dark status-badge">Pending: <?php echo $statusCounts['pending']; ?></span>
-                    <span class="badge bg-success text-white status-badge">Approved: <?php echo $statusCounts['approved']; ?></span>
-                    <span class="badge bg-danger text-white status-badge">Rejected: <?php echo $statusCounts['rejected']; ?></span>
-                    <span class="badge bg-info text-white status-badge">Completed: <?php echo $statusCounts['completed']; ?></span>
-                    <span class="badge bg-secondary text-white status-badge">Cancelled: <?php echo $statusCounts['cancelled']; ?></span>
-                </div>
-            </div>
-
-            <!-- Calendar Section -->
+            <!-- Calendar and Quick Actions -->
             <div class="row">
-                <div class="col-12">
-                    <div class="dashboard-card p-3">
-                        <h5 class="mb-3">Booking Calendar</h5>
-                        <div id="calendar"></div>
+                <div class="col-lg-9">
+                    <div class="card">
+                        <div class="card-header">
+                            Booking Calendar
+                        </div>
+                        <div class="card-body">
+                            <div id="calendar"></div>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Quick Links -->
-            <div class="quick-links">
-                <h5>Quick Actions</h5>
-                <a href="orders.php" class="btn btn-outline-primary btn-sm"><i class="fas fa-list"></i> View All Orders</a>
-                <a href="add_package.php" class="btn btn-outline-success btn-sm"><i class="fas fa-plus"></i> Add New Package</a>
-                <a href="announcement.php" class="btn btn-outline-info btn-sm"><i class="fas fa-bullhorn"></i> Manage Announcements</a>
+                <div class="col-lg-3">
+                    <div class="card">
+                        <div class="card-header">
+                            Quick Actions
+                        </div>
+                        <div class="card-body">
+                            <a href="orders.php" class="btn btn-primary w-100 mb-2"><i class="fas fa-list me-2"></i>View All Bookings</a>
+                            <a href="add_package.php" class="btn btn-outline-secondary w-100 mb-2"><i class="fas fa-plus me-2"></i>Add New Package</a>
+                            <a href="announcement.php" class="btn btn-outline-secondary w-100"><i class="fas fa-bullhorn me-2"></i>Manage Announcements</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Modal for Booking Details -->
-    <div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" style="display: none;" inert>
-        <div class="modal-dialog">
+    <div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="bookingModalLabel">Booking Details</h5>
@@ -192,7 +171,7 @@ try {
                 <div class="modal-body" id="bookingModalBody"></div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <a id="goToOrdersBtn" href="orders.php" class="btn btn-primary">Go to Orders</a>
+                    <a id="goToOrdersBtn" href="orders.php" class="btn btn-primary">Go to Bookings</a>
                 </div>
             </div>
         </div>

@@ -26,6 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $total_amount = isset($_POST['total_amount']) ? floatval(str_replace(',', '', $_POST['total_amount'])) : null;
     $additional_requests = isset($_POST['additional_requests']) ? $_POST['additional_requests'] : null;
     $special_requirements = isset($_POST['special_requirements']) ? $_POST['special_requirements'] : null;
+        $customizations = isset($_POST['customizations']) ? $_POST['customizations'] : null;
+        $price_per_head = isset($_POST['price_per_head']) ? floatval($_POST['price_per_head']) : null;
 
     // Basic validation
     if (!$package_id || !$event_type || !$event_date || !$event_time || !$number_of_guests || !$location || !$total_amount) {
@@ -37,27 +39,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     try {
-        // Prepare and execute the SQL statement
-        $stmt = $db->prepare("
-            INSERT INTO event_bookings (
-                user_id, package_id, location, event_type, event_date, event_time, 
-                number_of_guests, total_amount, payment_status, booking_status, 
-                additional_requests, special_requirements
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', ?, ?)
-        ");
-        $stmt->execute([
-            $user_id, $package_id, $location, $event_type, $event_date, $event_time,
-            $number_of_guests, $total_amount, $additional_requests, $special_requirements
-        ]);
-
-        // Return success response
+        if (!empty($customizations)) {
+            // Custom booking: save customizations and price_per_head
+            $stmt = $db->prepare("
+                INSERT INTO event_bookings (
+                    user_id, package_id, location, event_type, event_date, event_time,
+                    number_of_guests, total_amount, payment_status, booking_status,
+                    additional_requests, special_requirements, customizations, price_per_head
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', ?, ?, ?, ?)
+            ");
+            $stmt->execute([
+                $user_id, $package_id, $location, $event_type, $event_date, $event_time,
+                $number_of_guests, $total_amount, $additional_requests, $special_requirements,
+                $customizations, $price_per_head
+            ]);
+        } else {
+            // Regular booking
+            $stmt = $db->prepare("
+                INSERT INTO event_bookings (
+                    user_id, package_id, location, event_type, event_date, event_time,
+                    number_of_guests, total_amount, payment_status, booking_status,
+                    additional_requests, special_requirements
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', ?, ?)
+            ");
+            $stmt->execute([
+                $user_id, $package_id, $location, $event_type, $event_date, $event_time,
+                $number_of_guests, $total_amount, $additional_requests, $special_requirements
+            ]);
+        }
         echo json_encode([
             'success' => true,
             'message' => 'Your booking has been successfully submitted!'
         ]);
         exit();
     } catch (PDOException $e) {
-        // Return error response
         echo json_encode([
             'success' => false,
             'message' => 'Error processing booking: ' . htmlspecialchars($e->getMessage())

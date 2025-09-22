@@ -1,0 +1,361 @@
+/* Admin Bookings Enhanced Styling */
+/* Modern, consistent design for all admin fetch files */
+
+/* Table Container */
+.bookings-table-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+/* Table Styling */
+.bookings-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 0;
+}
+
+.bookings-table th {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 1rem 0.75rem;
+    text-align: left;
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.bookings-table th:first-child {
+    border-top-left-radius: 12px;
+}
+
+.bookings-table th:last-child {
+    border-top-right-radius: 12px;
+}
+
+.bookings-table td {
+    padding: 1rem 0.75rem;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+    transition: all 0.2s ease;
+}
+
+/* Zebra Striping */
+.bookings-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.bookings-table tbody tr:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+/* Hover Effects */
+.bookings-table tbody tr:hover {
+    background-color: #e3f2fd;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+}
+
+.bookings-table tbody tr:hover td {
+    border-color: #007bff;
+}
+
+/* Status Badges - Enhanced */
+.status-btn {
+    border: none;
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    min-width: 100px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.status-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.status-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+/* Status Colors */
+.status-btn.bg-warning { /* Pending */
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important;
+    color: #000 !important;
+}
+
+.status-btn.bg-primary { /* On Process */
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+    color: #fff !important;
+}
+
+.status-btn.bg-success { /* Approved */
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
+    color: #fff !important;
+}
+
+.status-btn.bg-danger { /* Rejected/Cancelled */
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    color: #fff !important;
+}
+
+.status-btn.bg-info { /* Completed */
+    background: linear-gradient(135deg, #20c997 0%, #138a6c 100%) !important;
+    color: #fff !important;
+}
+
+.status-btn.bg-secondary { /* Default */
+    background: linear-gradient(135deg, #6c757d 0%, #545b62 100%) !important;
+    color: #fff !important;
+}
+
+/* Expand/Collapse Functionality */
+.expand-btn {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    color: #007bff;
+    font-size: 1.1rem;
+}
+
+.expand-btn:hover {
+    color: #0056b3;
+    transform: scale(1.2);
+}
+
+.expand-btn.expanded {
+    transform: rotate(180deg);
+}
+
+.details-row {
+    display: none;
+    background: #f8f9fa;
+}
+
+.details-row.show {
+    display: table-row;
+    animation: fadeIn 0.3s ease;
+}
+
+.details-content {
+    padding: 1.5rem;
+    background: #fff;
+    border-radius: 8px;
+    margin: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.details-content > div {
+    margin-bottom: 1.5rem;
+}
+
+.details-content h6 {
+    color: #007bff;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 0.5rem;
+}
+
+.details-content p {
+    margin: 0.5rem 0;
+    color: #495057;
+}
+
+/* Chat Button Styling */
+.chat-btn {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem;
+    transition: all 0.3s ease;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+    background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+}
+
+/* Custom Menu Details Table */
+.custom-menu-table {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin: 1rem 0;
+}
+
+.custom-menu-table th {
+    background: #007bff;
+    color: white;
+    padding: 0.75rem;
+    font-weight: 600;
+}
+
+.custom-menu-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.custom-menu-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .bookings-table th,
+    .bookings-table td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .status-btn {
+        min-width: 90px;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .bookings-table-container {
+        overflow-x: auto;
+    }
+    
+    .bookings-table {
+        min-width: 1000px;
+    }
+    
+    .details-content {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .bookings-table th,
+    .bookings-table td {
+        padding: 0.6rem 0.4rem;
+        font-size: 0.8rem;
+    }
+    
+    .status-btn {
+        min-width: 80px;
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+    }
+    
+    .details-content {
+        padding: 0.75rem;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Loading States */
+.loading-row {
+    animation: pulse 1.5s infinite;
+    opacity: 0.7;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #dee2e6;
+}
+
+.empty-state h5 {
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: #adb5bd;
+}
+
+/* Utility Classes */
+.text-currency {
+    font-weight: 600;
+    color: #28a745;
+}
+
+.customer-col {
+    font-weight: 600;
+    color: #495057;
+}
+
+.description-col {
+    color: #6c757d;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* Print Styles */
+@media print {
+    .bookings-table-container {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+    
+    .bookings-table th {
+        background: #f8f9fa !important;
+        color: #000 !important;
+    }
+    
+    .status-btn {
+        background: #f8f9fa !important;
+        color: #000 !important;
+        border: 1px solid #ddd;
+    }
+    
+    .chat-btn {
+        display: none;
+    }
+}

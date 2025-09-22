@@ -22,32 +22,52 @@ try {
     $stmt->execute();
     $wedding_packages = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $packages_json = json_encode($wedding_packages);
-    
     $itemsPerPage = 2;
     $totalPackages = count($wedding_packages);
     $totalPages = ceil($totalPackages / $itemsPerPage);
-    
     $currentPage = isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 && $_GET['page'] <= $totalPages 
                    ? (int)$_GET['page'] 
                    : 1;
+    // Fetch the package_id for Custom Wedding Package
+    $custom_package_id = null;
+    foreach ($wedding_packages as $pkg) {
+        if (strtolower($pkg['name']) === 'custom wedding package') {
+            $custom_package_id = $pkg['package_id'];
+            break;
+        }
+    }
 } catch (PDOException $e) {
     echo '<div class="alert alert-danger">Error loading packages: ' . htmlspecialchars($e->getMessage()) . '</div>';
     $packages_json = json_encode([]);
     $totalPackages = 0;
     $totalPages = 0;
     $currentPage = 1;
+    $custom_package_id = null;
 }
 
-// Fetch package add-ons for customization
+// Fetch active wedding menu items for custom package
 try {
-    $addons_stmt = $db->prepare("SELECT * FROM package_addons WHERE category = 'Wedding' AND status = 'active'");
-    $addons_stmt->execute();
-    $package_addons = $addons_stmt->fetchAll(PDO::FETCH_ASSOC);
-    $addons_json = json_encode($package_addons);
+    $menus_stmt = $db->prepare("SELECT * FROM menus WHERE service_type = 'wedding' AND status = 'active'");
+    $menus_stmt->execute();
+    $wedding_menus = $menus_stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Fix image paths before encoding to JSON
+    foreach ($wedding_menus as &$menu) {
+        $image_path = $menu['image_path'];
+        // Fix the image path - remove any './' prefix and ensure it's relative to admin/uploads
+        if (strpos($image_path, './uploads/') === 0) {
+            $menu['image_path'] = '../admin/uploads/' . substr($image_path, 10);
+        } elseif (strpos($image_path, 'uploads/') === 0) {
+            $menu['image_path'] = '../admin/uploads/' . substr($image_path, 8);
+        }
+    }
+    unset($menu); // break the reference
+    
+    $wedding_menus_json = json_encode($wedding_menus);
 } catch (PDOException $e) {
-    error_log("Error fetching package addons: " . $e->getMessage());
-    $package_addons = [];
-    $addons_json = json_encode([]);
+    error_log("Error fetching wedding menus: " . $e->getMessage());
+    $wedding_menus = [];
+    $wedding_menus_json = json_encode([]);
 }
 ?>
 <!DOCTYPE html>
@@ -145,6 +165,79 @@ try {
             border-top: 2px solid #495057;
             padding-top: 10px;
             margin-top: 10px;
+        }
+
+        /* Shopee-style custom package section */
+        .custom-menu-card {
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            transition: box-shadow 0.2s, transform 0.2s;
+            border: 1px solid #f1f1f1;
+            background: #fff;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .custom-menu-card:hover {
+            box-shadow: 0 6px 18px rgba(0,0,0,0.13);
+            transform: translateY(-2px) scale(1.01);
+        }
+        .custom-menu-img {
+            border-radius: 12px 12px 0 0;
+            object-fit: cover;
+            width: 100%;
+            height: 160px;
+        }
+        .custom-menu-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .custom-menu-price {
+            color: #e53935;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .custom-qty-group {
+            display: flex;
+            align-items: center;
+            margin-top: 0.5rem;
+        }
+        .custom-qty-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #f1f1f1;
+            color: #333;
+            font-size: 1.2rem;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .custom-qty-btn:active {
+            background: #e0e0e0;
+        }
+        .custom-qty-input {
+            width: 48px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin: 0 6px;
+            height: 32px;
+        }
+        .custom-cart-summary {
+            position: sticky;
+            top: 90px;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            border-radius: 12px;
+            background: #fff;
+            margin-bottom: 2rem;
+        }
+        @media (max-width: 991px) {
+            .custom-cart-summary {
+                position: static;
+                margin-top: 1.5rem;
+            }
         }
         
         .package-image {
@@ -256,6 +349,7 @@ try {
         </div>
     </div>
 
+
     <!-- Wedding Packages Section -->
     <div class="container-fluid py-6 wow fadeInUp" data-wow-delay="0.3s">
         <div class="container">
@@ -282,6 +376,42 @@ try {
                     Next <i class="fas fa-arrow-right ms-1"></i>
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Custom Wedding Package Section (Shopee-style) -->
+    <div class="container-fluid py-6 wow fadeInUp" data-wow-delay="0.3s">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold">Customize Your Package Now</h1>
+                <p class="fs-5 text-muted">Build your own wedding package by selecting from our menu items below.</p>
+            </div>
+            <form id="customWeddingForm">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div id="customMenuAccordion">
+                            <!-- Menu items grouped by category will be loaded here -->
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="custom-cart-summary p-3 mb-4">
+                            <div class="card-header bg-primary text-white text-center rounded mb-3">
+                                <h5 class="mb-0">Your Custom Package Cart</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="customSummaryItems"></div>
+                                <div class="summary-total mt-3 d-flex justify-content-between align-items-center">
+                                    <span>Total:</span>
+                                    <span id="customTotalPriceDisplay">₱0.00</span>
+                                </div>
+                            </div>
+                            <button type="button" id="customBookNowBtn" class="btn btn-success w-100 mt-3 py-2 fs-5">
+                                <i class="fas fa-calendar-check me-2"></i>Book Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -406,7 +536,11 @@ try {
                             </div>
                             <div class="col-12">
                                 <label class="form-label">Number of Guests</label>
-                                <input type="text" class="form-control" id="modalNumberOfGuests" name="number_of_guests" readonly>
+                                <input type="number" min="1" class="form-control" id="modalNumberOfGuests" name="number_of_guests">
+                            </div>
+                            <div class="col-12" id="pricePerHeadRow" style="display:none;">
+                                <label class="form-label">Price Per Head (₱)</label>
+                                <input type="number" min="0" step="0.01" class="form-control" id="modalPricePerHead" name="price_per_head" value="0" readonly>
                             </div>
                             <div class="col-12">
                                 <label class="form-label">Event Date</label>
@@ -549,9 +683,29 @@ try {
                 document.getElementById("modalPackageName").value = packageName;
                 document.getElementById("modalTotalAmountDisplay").value = "₱" + totalPrice.toLocaleString('en-US', {minimumFractionDigits: 2});
                 document.getElementById("modalTotalAmount").value = totalPrice;
-                document.getElementById("modalNumberOfGuests").value = numberOfGuests;
                 document.getElementById("modalCustomizations").value = customizations;
                 document.getElementById("modalCustomizationTotal").value = customizationTotal;
+
+                // Number of Guests: editable for custom, readonly for default
+                const guestsInput = document.getElementById("modalNumberOfGuests");
+                const pricePerHeadRow = document.getElementById("pricePerHeadRow");
+                const pricePerHeadInput = document.getElementById("modalPricePerHead");
+                if (packageId == customPackageId) {
+                    guestsInput.value = numberOfGuests && numberOfGuests !== 'null' ? numberOfGuests : '';
+                    guestsInput.readOnly = false;
+                    guestsInput.required = true;
+                    guestsInput.placeholder = 'Enter number of guests';
+                    pricePerHeadRow.style.display = '';
+                    // Set a default price per head if empty, and make readonly
+                    if (!pricePerHeadInput.value || pricePerHeadInput.value == '0') pricePerHeadInput.value = 100; // Default ₱100/head
+                    pricePerHeadInput.readOnly = true;
+                } else {
+                    guestsInput.value = numberOfGuests;
+                    guestsInput.readOnly = true;
+                    guestsInput.required = false;
+                    guestsInput.placeholder = '';
+                    pricePerHeadRow.style.display = 'none';
+                }
 
                 if (!calendarInitialized) {
                     var calendarEl = document.getElementById('calendar');
@@ -609,12 +763,16 @@ try {
             });
         });
 
-        // Client-side Pagination for Wedding Packages
-        let currentPage = <?php echo $currentPage; ?>;
-        const itemsPerPage = <?php echo $itemsPerPage; ?>;
-        const totalPackages = <?php echo $totalPackages; ?>;
-        const totalPages = <?php echo $totalPages; ?>;
-        const packages = <?php echo $packages_json; ?>;
+    // Client-side Pagination for Wedding Packages
+    let currentPage = <?php echo $currentPage; ?>;
+    const itemsPerPage = <?php echo $itemsPerPage; ?>;
+    const totalPackages = <?php echo $totalPackages; ?>;
+    const totalPages = <?php echo $totalPages; ?>;
+    const packages = <?php echo $packages_json; ?>;
+
+    // Custom Wedding Menu Items
+    const weddingMenus = <?php echo $wedding_menus_json; ?>;
+    let customSelections = {}; // {menu_id: {title, price, quantity}}
 
         function loadPackages(page) {
             if (page < 1) page = 1;
@@ -685,9 +843,7 @@ try {
                                 </div>
                             </div>
                             <div class="package-footer text-center py-3">
-                                <button class="btn customize-btn rounded-pill py-2 px-4"
-                                    onclick="openCustomizationModal(${pkg.package_id}, '${pkg.name}', ${pkg.price}, ${pkg.number_of_guests})">
-                                    <i class="fa fa-cog me-2"></i>Customize
+                                
                                 </button>
                                 <button class="btn btn-primary rounded-pill py-2 px-4"
                                     data-bs-toggle="modal"
@@ -902,8 +1058,189 @@ try {
             }
         });
 
-        // Initialize packages on page load
+        // Render custom menu items (Shopee-style)
+        function renderCustomMenuList() {
+            const $accordion = $('#customMenuAccordion');
+            $accordion.empty();
+            if (!weddingMenus.length) {
+                $accordion.html('<div class="alert alert-info text-center">No menu items available for customization.</div>');
+                return;
+            }
+
+            // Group menus by category
+            const groupedMenus = weddingMenus.reduce((acc, menu) => {
+                const category = menu.category || 'Uncategorized';
+                if (!acc[category]) {
+                    acc[category] = [];
+                }
+                acc[category].push(menu);
+                return acc;
+            }, {});
+
+            const categoryOrder = ['Appetizers', 'Soups', 'Main Course', 'Desserts', 'Beverages'];
+            const sortedCategories = Object.keys(groupedMenus).sort((a, b) => {
+                const indexA = categoryOrder.indexOf(a);
+                const indexB = categoryOrder.indexOf(b);
+                if (indexA > -1 && indexB > -1) return indexA - indexB;
+                if (indexA > -1) return -1;
+                if (indexB > -1) return 1;
+                return a.localeCompare(b);
+            });
+
+            sortedCategories.forEach((category, index) => {
+                const collapseId = `collapse-${category.replace(/\s+/g, '-')}`;
+                const isFirst = index === 0;
+
+                const categoryHtml = `
+                    <div class="accordion-item mb-3">
+                        <h2 class="accordion-header" id="heading-${collapseId}">
+                            <button class="accordion-button ${isFirst ? '' : 'collapsed'}" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="${isFirst}" aria-controls="${collapseId}">
+                                ${category}
+                            </button>
+                        </h2>
+                        <div id="${collapseId}" class="accordion-collapse collapse ${isFirst ? 'show' : ''}" aria-labelledby="heading-${collapseId}" data-bs-parent="#customMenuAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    ${groupedMenus[category].map(menu => `
+                                        <div class="col-md-6 col-lg-4 mb-4">
+                                            <div class="custom-menu-card h-100">
+                                                ${menu.image_path ? `<img src="${menu.image_path}" class="custom-menu-img">` : ''}
+                                                <div class="p-3 flex-grow-1 d-flex flex-column justify-content-between">
+                                                    <div>
+                                                        <div class="custom-menu-title">${menu.title}</div>
+                                                        <div class="text-muted small mb-2">${menu.description}</div>
+                                                    </div>
+                                                    <div class="d-flex align-items-center justify-content-between mt-2">
+                                                        <span class="custom-menu-price">₱${parseFloat(menu.price).toLocaleString('en-US', {minimumFractionDigits:2})}</span>
+                                                        <span class="badge bg-success">Max: ${menu.max_quantity}</span>
+                                                    </div>
+                                                    <div class="custom-qty-group mt-2">
+                                                        <button type="button" class="custom-qty-btn custom-qty-minus" data-menu-id="${menu.id}" data-max="${menu.max_quantity}">-</button>
+                                                        <input type="text" readonly value="0" class="custom-qty-input" data-menu-id="${menu.id}" data-title="${menu.title}" data-price="${menu.price}" data-max="${menu.max_quantity}">
+                                                        <button type="button" class="custom-qty-btn custom-qty-plus" data-menu-id="${menu.id}" data-max="${menu.max_quantity}">+</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $accordion.append(categoryHtml);
+            });
+        }
+
+        // Update custom summary and total
+        function updateCustomSummary() {
+            let total = 0;
+            let html = '';
+            Object.values(customSelections).forEach(sel => {
+                if (sel.quantity > 0) {
+                    const itemTotal = sel.price * sel.quantity;
+                    total += itemTotal;
+                    html += `<div class="summary-item d-flex justify-content-between"><span>${sel.title} (x${sel.quantity})</span><span>₱${itemTotal.toLocaleString('en-US', {minimumFractionDigits:2})}</span></div>`;
+                }
+            });
+            if (!html) html = '<div class="text-muted">No items selected.</div>';
+            $('#customSummaryItems').html(html);
+            $('#customTotalPriceDisplay').text('₱' + total.toLocaleString('en-US', {minimumFractionDigits:2}));
+        }
+
+
+        // Shopee-style plus/minus quantity controls
+        $(document).on('click', '.custom-qty-plus', function() {
+            const menuId = $(this).data('menu-id');
+            const max = parseInt($(this).data('max'));
+            const $input = $(`.custom-qty-input[data-menu-id='${menuId}']`);
+            let qty = parseInt($input.val()) || 0;
+            if (qty < max) qty++;
+            $input.val(qty);
+            $input.trigger('change');
+        });
+        $(document).on('click', '.custom-qty-minus', function() {
+            const menuId = $(this).data('menu-id');
+            const $input = $(`.custom-qty-input[data-menu-id='${menuId}']`);
+            let qty = parseInt($input.val()) || 0;
+            if (qty > 0) qty--;
+            $input.val(qty);
+            $input.trigger('change');
+        });
+        $(document).on('change', '.custom-qty-input', function() {
+            const menuId = $(this).data('menu-id');
+            const title = $(this).data('title');
+            const price = parseFloat($(this).data('price'));
+            const max = parseInt($(this).data('max'));
+            let qty = parseInt($(this).val()) || 0;
+            if (qty > max) qty = max;
+            if (qty < 0) qty = 0;
+            $(this).val(qty);
+            if (qty > 0) {
+                customSelections[menuId] = { title, price, quantity: qty };
+            } else {
+                delete customSelections[menuId];
+            }
+            updateCustomSummary();
+        });
+
+        // Book Now for custom package
+        const customPackageId = <?php echo json_encode($custom_package_id); ?>;
+        $('#customBookNowBtn').on('click', function() {
+            // Prepare data for booking modal
+            const selectedItems = Object.values(customSelections).filter(sel => sel.quantity > 0);
+            if (!selectedItems.length) {
+                Toastify({
+                    text: 'Please select at least one menu item.',
+                    duration: 3000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#dc3545",
+                }).showToast();
+                return;
+            }
+            const total = selectedItems.reduce((sum, sel) => sum + sel.price * sel.quantity, 0);
+            // Open booking modal with custom data
+            const bookNowButton = document.createElement('button');
+            bookNowButton.setAttribute('data-bs-toggle', 'modal');
+            bookNowButton.setAttribute('data-bs-target', '#bookingModal');
+            bookNowButton.setAttribute('data-package-id', customPackageId ? customPackageId : '');
+            bookNowButton.setAttribute('data-package-name', 'Custom Wedding Package');
+            bookNowButton.setAttribute('data-price', total);
+            // Pass empty for now, will be filled in modal
+            bookNowButton.setAttribute('data-number-of-guests', '');
+            bookNowButton.setAttribute('data-customizations', JSON.stringify(selectedItems));
+            bookNowButton.setAttribute('data-customization-total', 0);
+            document.body.appendChild(bookNowButton);
+            bookNowButton.click();
+            document.body.removeChild(bookNowButton);
+        });
+        // Update total price live for custom bookings
+        function updateCustomTotal() {
+            const guests = parseInt($('#modalNumberOfGuests').val()) || 0;
+            const pricePerHead = parseFloat($('#modalPricePerHead').val()) || 0;
+            let menuTotal = 0;
+            Object.values(customSelections).forEach(sel => {
+                if (sel.quantity > 0) menuTotal += sel.price * sel.quantity;
+            });
+            const total = menuTotal + (guests * pricePerHead);
+            $('#modalTotalAmountDisplay').val('₱' + total.toLocaleString('en-US', {minimumFractionDigits:2}));
+            $('#modalTotalAmount').val(total);
+        }
+        // Listen for changes
+        $(document).on('input', '#modalNumberOfGuests', function() {
+            updateCustomTotal();
+        });
+        // When modal opens, also update total for custom
+        $('#bookingModal').on('shown.bs.modal', function() {
+            if ($('#pricePerHeadRow').is(':visible')) updateCustomTotal();
+        });
+
+        // Initialize packages and custom menu on page load
         loadPackages(currentPage);
+        renderCustomMenuList();
+        updateCustomSummary();
     </script>
 </body>
 </html>

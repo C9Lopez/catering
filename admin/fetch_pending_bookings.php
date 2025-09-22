@@ -26,11 +26,44 @@ try {
     } else {
         foreach ($bookings as $row) {
             // Main row content
-            $descContent = "Date: " . htmlspecialchars($row['event_date']) . " | Time: " . htmlspecialchars($row['event_time']) . 
-                           " | Setup: " . htmlspecialchars($row['setup_time']) . " | Location: " . htmlspecialchars($row['location']);
+            $descContent = "Date: " . htmlspecialchars($row['event_date']) . " | Time: " . htmlspecialchars($row['event_time']) .
+                           " | Setup: " . htmlspecialchars($row['setup_time']) . " | Location: " . htmlspecialchars($row['location']);     
             $customerName = htmlspecialchars($row['first_name'] . ' ' . $row['last_name']);
 
             // Expanded row content
+            $isCustom = (strtolower($row['package_name']) === 'custom wedding package');
+            $customDetails = '';
+            if ($isCustom) {
+                // Fetch customizations from event_bookings table (assume field: customizations)
+                $customStmt = $db->prepare("SELECT customizations FROM event_bookings WHERE booking_id = ?");
+                $customStmt->execute([$row['booking_id']]);
+                $customRow = $customStmt->fetch(PDO::FETCH_ASSOC);
+                $customizations = [];
+                if ($customRow && !empty($customRow['customizations'])) {
+                    $customizations = json_decode($customRow['customizations'], true);
+                }
+                $customDetails .= "<div class='mt-3'><h6>Custom Menu Details</h6>";
+                if (!empty($customizations) && is_array($customizations)) {
+                    $customDetails .= "<table class='table table-bordered table-sm'><thead><tr><th>Menu Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>";
+                    $grandTotal = 0;
+                    foreach ($customizations as $item) {
+                        // Support both array of objects and associative arrays
+                        $itemTitle = htmlspecialchars(isset($item['title']) ? $item['title'] : (isset($item['label']) ? $item['label'] : ''));
+                        $itemQty = intval($item['quantity'] ?? ($item['qty'] ?? 0));
+                        $itemPrice = floatval($item['price'] ?? 0);
+                        $itemTotal = $itemQty * $itemPrice;
+                        $grandTotal += $itemTotal;
+                        $customDetails .= "<tr><td>{$itemTitle}</td><td>{$itemQty}</td><td>₱" . number_format($itemPrice, 2) . "</td><td>₱" . number_format($itemTotal, 2) . "</td></tr>";
+                    }
+                    $customDetails .= "<tr><th colspan='3' class='text-end'>Total</th><th>₱" . number_format($grandTotal, 2) . "</th></tr>";
+                    $customDetails .= "</tbody></table>";
+                } else {
+                    // Show debug info for admin if customizations are missing
+                    $customDetails .= "<div class='text-danger'>No custom menu items found. <small>(Check if customizations were saved in the booking record.)</small></div>";
+                }
+                $customDetails .= "<div><strong>Number of Guests:</strong> " . htmlspecialchars($row['number_of_guests'] ?? 'N/A') . "</div>";
+                $customDetails .= "</div>";
+            }
             $detailsContent = "
                 <div class='details-content'>
                     <div>
@@ -48,6 +81,7 @@ try {
                         <p><strong>Time:</strong> " . htmlspecialchars($row['event_time']) . "</p>
                         <p><strong>Setup Time:</strong> " . htmlspecialchars($row['setup_time']) . "</p>
                         <p><strong>Location:</strong> " . htmlspecialchars($row['location']) . "</p>
+                        $customDetails
                     </div>
                 </div>
             ";
@@ -65,11 +99,11 @@ try {
             echo "<input type='hidden' name='booking_id' value='{$row['booking_id']}'>";
             echo "<select name='booking_status' class='status-btn " . getStatusClass($row['booking_status']) . "' onchange='updateStatus(event, this)'>";
             echo "<option value='pending' " . ($row['booking_status'] === 'pending' ? 'selected' : '') . ">Pending</option>";
-            echo "<option value='on_process' " . ($row['booking_status'] === 'on_process' ? 'selected' : '') . ">On Process</option>";
+            echo "<option value='on_process' " . ($row['booking_status'] === 'on_process' ? 'selected' : '') . ">On Process</option>";     
             echo "<option value='approved' " . ($row['booking_status'] === 'approved' ? 'selected' : '') . ">Approved</option>";
             echo "<option value='rejected' " . ($row['booking_status'] === 'rejected' ? 'selected' : '') . ">Rejected</option>";
-            echo "<option value='completed' " . ($row['booking_status'] === 'completed' ? 'selected' : '') . ">Completed</option>";
-            echo "<option value='cancelled' " . ($row['booking_status'] === 'cancelled' ? 'selected' : '') . ">Cancelled</option>";
+            echo "<option value='completed' " . ($row['booking_status'] === 'completed' ? 'selected' : '') . ">Completed</option>";        
+            echo "<option value='cancelled' " . ($row['booking_status'] === 'cancelled' ? 'selected' : '') . ">Cancelled</option>";        
             echo "</select></form></td>";
             echo "<td>";
             if (in_array($row['booking_status'], ['approved', 'on_process'])) {
