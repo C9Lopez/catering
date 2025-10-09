@@ -55,9 +55,9 @@ foreach ($menus as $menu) {
 <body class="light-theme">
 
     <!-- Loading Screen -->
-    <div id="loading-screen">
+    <!-- <div id="loading-screen">
         <div class="loader"></div>
-    </div>
+    </div> -->
 
     <?php include '../layout/navbar.php'; ?>
 
