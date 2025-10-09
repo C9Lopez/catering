@@ -82,11 +82,11 @@ function isActive($pages) {
                     <?php endif; ?>
                 </ul>
                 <div class="d-flex align-items-center gap-2">
-                    <div class="theme-switcher">
+                    <!-- <div class="theme-switcher">
                         <button id="theme-toggle" class="btn btn-sm btn-outline-secondary rounded-circle p-2" title="Toggle theme" style="width: 38px; height: 38px;">
                             <i class="fas fa-moon"></i>
                         </button>
-                    </div>
+                    </div> -->
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <!-- Notification Bell -->
                         <div class="dropdown">
