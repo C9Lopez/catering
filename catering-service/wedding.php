@@ -101,7 +101,7 @@ try {
     <link href="../css/themes.css" rel="stylesheet">
     <link href="../css/packages.css" rel="stylesheet">
     <link href="../css/booking.css" rel="stylesheet">
-    <link href="../css/calendar.css" rel="stylesheet">
+    <!-- <link href="../css/calendar.css" rel="stylesheet"> -->
 
     <!-- Toastify CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js@1.12.0/src/toastify.min.css">

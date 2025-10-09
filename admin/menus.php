@@ -456,14 +456,60 @@ try {
                 font-size: 0.9rem;
             }
         }
+
+        /* Mobile Header Styles */
+        .mobile-header {
+            display: none;
+            background: #fff;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #333;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .mobile-header-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        @media (max-width: 991.98px) {
+            .mobile-header {
+                display: flex;
+            }
+        }
+
+        /* Sidebar Active Styles */
+        .sidebar.active {
+            transform: translateX(0);
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
     </style>
 </head>
 <body>
 <?php include '../layout/sidebar.php'; ?>
     <div class="main-content">
+        <header class="mobile-header">
+            <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+            <h2 class="mobile-header-title">Manage Menus</h2>
+        </header>
         <div class="container-fluid">
             <div class="card-section">
-                <h1>Add Menu Item</h1>
+                <h>Add Menu Item</h1>
                 <form id="addMenuForm" enctype="multipart/form-data">
                     <input type="hidden" name="action" value="add">
                     <div class="row g-3">
@@ -684,141 +730,34 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script>
-        // Updated JavaScript to handle the UI interactions
-        // Handle add form submission with AJAX
-        $('#addMenuForm').on('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-
-            $.ajax({
-                url: 'menus.php',
-                type: 'POST',
-                data: formData,
-                contentType: false,
-                processData: false,
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        $('#addMenuForm')[0].reset();
-                        applyFilters();
-                        Toastify({
-                            text: response.message,
-                            duration: 3000,
-                            close: true,
-                            gravity: "top",
-                            position: "right",
-                            backgroundColor: "#28a745",
-                        }).showToast();
-                    } else {
-                        Toastify({
-                            text: response.message,
-                            duration: 3000,
-                            close: true,
-                            gravity: "top",
-                            position: "right",
-                            backgroundColor: "#dc3545",
-                        }).showToast();
-                    }
-                },
-                error: function(xhr, status, error) {
-                    Toastify({
-                        text: 'Error adding menu item: ' + (xhr.responseJSON?.message || error),
-                        duration: 3000,
-                        close: true,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "#dc3545",
-                    }).showToast();
-                }
+        // Sidebar Toggle Functionality
+        $(document).ready(function() {
+            $('#sidebarToggle').on('click', function() {
+                $('#sidebar').addClass('active');
+                $('#sidebarOverlay').addClass('active');
             });
-        });
 
-        // Handle edit button click
-        $(document).on('click', '.edit-btn', function() {
-            const menuId = $(this).data('id');
-            const serviceType = $(this).data('service_type');
-            const categoryId = $(this).data('category_id');
-            const title = $(this).data('title');
-            const description = $(this).data('description');
-            const price = $(this).data('price');
-            const maxQuantity = $(this).data('max_quantity');
-            const status = $(this).data('status');
-            const imagePath = $(this).data('image_path');
-
-            // Populate the edit form
-            $('#edit_id').val(menuId);
-            $('#edit_service_type').val(serviceType);
-            $('#edit_category_id').val(categoryId);
-            $('#edit_title').val(title);
-            $('#edit_description').val(description);
-            $('#edit_price').val(price);
-            $('#edit_max_quantity').val(maxQuantity);
-            $('#edit_status').val(status);
-            $('#edit_image_preview').attr('src', imagePath);
-
-            // Show the modal
-            $('#editMenuModal').modal('show');
-        });
-
-        // Handle edit form submission with AJAX
-        $('#editMenuForm').on('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-
-            $.ajax({
-                url: 'menus.php',
-                type: 'POST',
-                data: formData,
-                contentType: false,
-                processData: false,
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        $('#editMenuModal').modal('hide');
-                        $('#editMenuForm')[0].reset();
-                        applyFilters();
-                        Toastify({
-                            text: response.message,
-                            duration: 3000,
-                            close: true,
-                            gravity: "top",
-                            position: "right",
-                            backgroundColor: "#28a745",
-                        }).showToast();
-                    } else {
-                        Toastify({
-                            text: response.message,
-                            duration: 3000,
-                            close: true,
-                            gravity: "top",
-                            position: "right",
-                            backgroundColor: "#dc3545",
-                        }).showToast();
-                    }
-                },
-                error: function(xhr, status, error) {
-                    Toastify({
-                        text: 'Error updating menu item: ' + (xhr.responseJSON?.message || error),
-                        duration: 3000,
-                        close: true,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "#dc3545",
-                    }).showToast();
-                }
+            $('#sidebarOverlay, #sidebarClose').on('click', function() {
+                $('#sidebar').removeClass('active');
+                $('#sidebarOverlay').removeClass('active');
             });
-        });
 
-        // Handle delete with AJAX and confirmation
-        $(document).on('click', '.delete-btn', function() {
-            const menuId = $(this).data('id');
-            if (confirm('Are you sure you want to delete this menu item?')) {
+            // Updated JavaScript to handle the UI interactions
+            // Handle add form submission with AJAX
+            $('#addMenuForm').on('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+
                 $.ajax({
-                    url: 'menus.php?action=delete&id=' + menuId,
-                    type: 'GET',
+                    url: 'menus.php',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
                     dataType: 'json',
                     success: function(response) {
                         if (response.success) {
+                            $('#addMenuForm')[0].reset();
                             applyFilters();
                             Toastify({
                                 text: response.message,
@@ -841,7 +780,7 @@ try {
                     },
                     error: function(xhr, status, error) {
                         Toastify({
-                            text: 'Error deleting menu item: ' + (xhr.responseJSON?.message || error),
+                            text: 'Error adding menu item: ' + (xhr.responseJSON?.message || error),
                             duration: 3000,
                             close: true,
                             gravity: "top",
@@ -850,15 +789,135 @@ try {
                         }).showToast();
                     }
                 });
+            });
+
+            // Handle edit button click
+            $(document).on('click', '.edit-btn', function() {
+                const menuId = $(this).data('id');
+                const serviceType = $(this).data('service_type');
+                const categoryId = $(this).data('category_id');
+                const title = $(this).data('title');
+                const description = $(this).data('description');
+                const price = $(this).data('price');
+                const maxQuantity = $(this).data('max_quantity');
+                const status = $(this).data('status');
+                const imagePath = $(this).data('image_path');
+
+                // Populate the edit form
+                $('#edit_id').val(menuId);
+                $('#edit_service_type').val(serviceType);
+                $('#edit_category_id').val(categoryId);
+                $('#edit_title').val(title);
+                $('#edit_description').val(description);
+                $('#edit_price').val(price);
+                $('#edit_max_quantity').val(maxQuantity);
+                $('#edit_status').val(status);
+                $('#edit_image_preview').attr('src', imagePath);
+
+                // Show the modal
+                $('#editMenuModal').modal('show');
+            });
+
+            // Handle edit form submission with AJAX
+            $('#editMenuForm').on('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+
+                $.ajax({
+                    url: 'menus.php',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            $('#editMenuModal').modal('hide');
+                            $('#editMenuForm')[0].reset();
+                            applyFilters();
+                            Toastify({
+                                text: response.message,
+                                duration: 3000,
+                                close: true,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: "#28a745",
+                            }).showToast();
+                        } else {
+                            Toastify({
+                                text: response.message,
+                                duration: 3000,
+                                close: true,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: "#dc3545",
+                            }).showToast();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        Toastify({
+                            text: 'Error updating menu item: ' + (xhr.responseJSON?.message || error),
+                            duration: 3000,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: "#dc3545",
+                        }).showToast();
+                    }
+                });
+            });
+
+            // Handle delete with AJAX and confirmation
+            $(document).on('click', '.delete-btn', function() {
+                const menuId = $(this).data('id');
+                if (confirm('Are you sure you want to delete this menu item?')) {
+                    $.ajax({
+                        url: 'menus.php?action=delete&id=' + menuId,
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success) {
+                                applyFilters();
+                                Toastify({
+                                    text: response.message,
+                                    duration: 3000,
+                                    close: true,
+                                    gravity: "top",
+                                    position: "right",
+                                    backgroundColor: "#28a745",
+                                }).showToast();
+                            } else {
+                                Toastify({
+                                    text: response.message,
+                                    duration: 3000,
+                                    close: true,
+                                    gravity: "top",
+                                    position: "right",
+                                    backgroundColor: "#dc3545",
+                                }).showToast();
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            Toastify({
+                                text: 'Error deleting menu item: ' + (xhr.responseJSON?.message || error),
+                                duration: 3000,
+                                close: true,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: "#dc3545",
+                            }).showToast();
+                        }
+                    });
+                }
+            });
+
+            // Function to apply filters and refresh the menu list
+            function applyFilters() {
+                const serviceType = $('#service_type_filter').val();
+                const categoryId = $('#category_filter').val();
+                window.location.href = `menus.php?service_type=${serviceType}&category_id=${categoryId}`;
             }
         });
-
-        // Function to apply filters and refresh the menu list
-        function applyFilters() {
-            const serviceType = $('#service_type_filter').val();
-            const categoryId = $('#category_filter').val();
-            window.location.href = `menus.php?service_type=${serviceType}&category_id=${categoryId}`;
-        }
     </script>
 </body>
 </html>

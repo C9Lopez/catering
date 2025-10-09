@@ -89,11 +89,62 @@ $categories = $db->query('SELECT * FROM customization_categories WHERE status="a
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="../css/admin.css" rel="stylesheet">
+    <style>
+        /* Mobile Header Styles */
+        .mobile-header {
+            display: none;
+            background: #fff;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #333;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .mobile-header-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        @media (max-width: 991.98px) {
+            .mobile-header {
+                display: flex;
+            }
+
+            .main-content {
+                padding-top: 4rem;
+            }
+        }
+
+        /* Sidebar Active Styles */
+        .sidebar.active {
+            transform: translateX(0);
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
 </head>
 <body>
     <?php include '../layout/sidebar.php'; ?>
 
     <div class="main-content">
+        <header class="mobile-header">
+            <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+            <h2 class="mobile-header-title">Customization Options</h2>
+        </header>
         <div class="container-fluid">
             <?php if (isset($_SESSION['error'])): ?>
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -110,7 +161,7 @@ $categories = $db->query('SELECT * FROM customization_categories WHERE status="a
 
             <div class="card">
                 <div class="card-body">
-                    <h2 class="card-title mb-4">Customization Options (Menu Items)</h2>
+                    <h2 class="card-title mb-4">    </h2>
 
                     <?php if (count($categories) === 0): ?>
                         <div class="alert alert-warning">No categories found. Please add a category first in the admin panel before adding options.</div>
@@ -279,6 +330,21 @@ $categories = $db->query('SELECT * FROM customization_categories WHERE status="a
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sidebar Toggle Functionality
+        $(document).ready(function() {
+            $('#sidebarToggle').on('click', function() {
+                $('#sidebar').addClass('active');
+                $('#sidebarOverlay').addClass('active');
+            });
+
+            $('#sidebarOverlay, #sidebarClose').on('click', function() {
+                $('#sidebar').removeClass('active');
+                $('#sidebarOverlay').removeClass('active');
+            });
+        });
+    </script>
 </body>
 </html>

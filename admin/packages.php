@@ -203,6 +203,10 @@ try {
 <?php include '../layout/sidebar.php'; ?>
     
     <div class="main-content">
+        <header class="mobile-header">
+            <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+            <h2 class="mobile-header-title">Packages Management</h2>
+        </header>
         <div class="container-fluid">
             <h1 class="mb-4">Packages Management</h1>
             

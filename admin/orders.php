@@ -35,7 +35,7 @@ function getStatusClass($status) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Orders Management - Catering Admin</title>
+    <title>Booking Management - Catering Admin</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -173,8 +173,12 @@ function getStatusClass($status) {
 <body class="admin-dashboard">
     <?php include '../layout/sidebar.php'; ?>
     <div class="main-content">
+        <header class="mobile-header">
+            <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+            <h2 class="mobile-header-title">Booking Management</h2>
+        </header>
         <div class="container-fluid">
-            <h1 class="mb-4">Orders Management</h1>
+            <h1 class="mb-4">Booking Management</h1>
             <div class="status-counts" id="statusCounts">
                 <span class="badge bg-warning text-dark">Pending: <?=$counts['pending']?></span>
                 <span class="badge bg-primary text-white">On Process: <?=$counts['on_process']?></span>

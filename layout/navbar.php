@@ -1,6 +1,4 @@
 <?php
-
-
 // Get the current URL path
 $currentPath = $_SERVER['REQUEST_URI'];
 
@@ -26,68 +24,101 @@ function isActive($pages) {
     <div class="container">
         <nav class="navbar navbar-light navbar-expand-lg py-4">
             <a href="index.php" class="navbar-brand">
-                <h1 class="text-primary fw-bold mb-0">Pochie<span class="text-dark">Catering</span></h1>
+                <h1 class="text-primary fw-bold mb-0 d-flex align-items-center">
+                    <i class="fas fa-utensils me-2 text-primary"></i>
+                    Pochie<span class="text-dark">Catering</span>
+                </h1>
             </a>
             <button class="navbar-toggler py-2 px-3" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarCollapse">
                 <span class="fa fa-bars text-primary"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarCollapse">
-                <div class="navbar-nav mx-auto">
-                    <a href="<?= $basePath ?>index.php" class="nav-item nav-link <?= isActive('index.php') ?>">Home</a>
-                    <div class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle <?= isActive(['wedding.php', 'debut.php', 'childrens.php', 'corporate.php', 'private.php']) ?>" data-bs-toggle="dropdown">Catering Services</a>
-                        <div class="dropdown-menu">
-                            <a href="<?= $cateringBase ?>wedding.php" class="dropdown-item">Wedding Catering Services</a>
-                            <a href="<?= $cateringBase ?>debut.php" class="dropdown-item">Debut Catering Services</a>
-                            <a href="<?= $cateringBase ?>childrens.php" class="dropdown-item">Children's Party Catering Services</a>
-                            <a href="<?= $cateringBase ?>corporate.php" class="dropdown-item">Corporate Catering Services</a>
-                            <a href="<?= $cateringBase ?>private.php" class="dropdown-item">Private Party Catering Services</a>
-                        </div>
-                    </div>
-                    <a href="<?= $basePath ?>about.php" class="nav-item nav-link <?= isActive('about.php') ?>">About Us</a>
-                    <a href="<?= $basePath ?>contact.php" class="nav-item nav-link <?= isActive('contact.php') ?>">Contact</a>
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a href="<?= $basePath ?>index.php" class="nav-link <?= isActive('index.php') ?>">
+                            <i class="fas fa-home me-1"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle <?= isActive(['wedding.php', 'debut.php', 'childrens.php', 'corporate.php', 'private.php']) ?>" 
+                           data-bs-toggle="dropdown" role="button" aria-expanded="false">
+                            <i class="fas fa-concierge-bell me-1"></i>Catering Services
+                        </a>
+                        <ul class="dropdown-menu shadow-sm border-0 rounded-3">
+                            <li><a href="<?= $cateringBase ?>wedding.php" class="dropdown-item py-2">
+                                <i class="fas fa-ring me-2"></i>Wedding Catering Services
+                            </a></li>
+                            <li><a href="<?= $cateringBase ?>debut.php" class="dropdown-item py-2">
+                                <i class="fas fa-star me-2"></i>Debut Catering Services
+                            </a></li>
+                            <li><a href="<?= $cateringBase ?>childrens.php" class="dropdown-item py-2">
+                                <i class="fas fa-child me-2"></i>Children's Party Catering Services
+                            </a></li>
+                            <li><a href="<?= $cateringBase ?>corporate.php" class="dropdown-item py-2">
+                                <i class="fas fa-briefcase me-2"></i>Corporate Catering Services
+                            </a></li>
+                            <li><a href="<?= $cateringBase ?>private.php" class="dropdown-item py-2">
+                                <i class="fas fa-users me-2"></i>Private Party Catering Services
+                            </a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="<?= $basePath ?>about.php" class="nav-link <?= isActive('about.php') ?>">
+                            <i class="fas fa-info-circle me-1"></i>About Us
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="<?= $basePath ?>contact.php" class="nav-link <?= isActive('contact.php') ?>">
+                            <i class="fas fa-envelope me-1"></i>Contact
+                        </a>
+                    </li>
                     <?php if (isset($_SESSION['user_id'])): ?>
-                        <a href="<?= $basePath ?>profile.php" class="nav-item nav-link <?= isActive('profile.php') ?>">Profile</a>
+                        <li class="nav-item">
+                            <a href="<?= $basePath ?>profile.php" class="nav-link <?= isActive('profile.php') ?>">
+                                <i class="fas fa-user me-1"></i>Profile
+                            </a>
+                        </li>
                     <?php endif; ?>
-                    <div class="d-flex align-items-center">
-                    <div class="theme-switcher me-3">
-                        <button id="theme-toggle" class="btn btn-sm btn-outline-secondary" title="Toggle theme">
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="theme-switcher">
+                        <button id="theme-toggle" class="btn btn-sm btn-outline-secondary rounded-circle p-2" title="Toggle theme" style="width: 38px; height: 38px;">
                             <i class="fas fa-moon"></i>
                         </button>
                     </div>
-                </div>
-                
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <!-- Notification Bell -->
-                        <div class="dropdown me-3">
-                            <a href="#" class="nav-link dropdown-toggle" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary rounded-circle p-2 position-relative" type="button" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications" style="width: 38px; height: 38px;">
                                 <i class="fas fa-bell"></i>
-                                <span class="badge bg-danger notification-count">0</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationBell">
-                                <li class="dropdown-header">Notifications</li>
-                                <div id="notification-list"></div>
-                                <li><hr class="dropdown-divider"></li>
-                                
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-count" style="font-size: 0.65em;">0</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end notification-dropdown shadow border-0 rounded-3 p-0" aria-labelledby="notificationBell" style="min-width: 300px; max-height: 400px; overflow-y: auto;">
+                                <li class="dropdown-header bg-light px-3 py-2 border-bottom">Notifications</li>
+                                <div id="notification-list" class="p-0"></div>
+                                <li class="dropdown-item text-center text-muted py-2 border-top">
+                                    <small>No more notifications</small>
+                                </li>
                             </ul>
                         </div>
                         <!-- Inbox Icon -->
-                        <div class="dropdown me-3">
-                            <a href="#" class="nav-link dropdown-toggle" id="inboxIcon" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary rounded-circle p-2 position-relative" type="button" id="inboxIcon" data-bs-toggle="dropdown" aria-expanded="false" title="Messages" style="width: 38px; height: 38px;">
                                 <i class="fas fa-envelope"></i>
-                                <span class="badge bg-primary message-count">0</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end message-dropdown" aria-labelledby="inboxIcon">
-                                <li class="dropdown-header">Unread Messages</li>
-                                <div id="message-list"></div>
-                                <li><hr class="dropdown-divider"></li>
-                                
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary message-count" style="font-size: 0.65em;">0</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end message-dropdown shadow border-0 rounded-3 p-0" aria-labelledby="inboxIcon" style="min-width: 300px; max-height: 400px; overflow-y: auto;">
+                                <li class="dropdown-header bg-light px-3 py-2 border-bottom">Unread Messages</li>
+                                <div id="message-list" class="p-0"></div>
+                                <li class="dropdown-item text-center text-muted py-2 border-top">
+                                    <small>No more messages</small>
+                                </li>
                             </ul>
                         </div>
                     <?php else: ?>
-                        <a href="<?= $basePath ?>auth/login.php" class="btn btn-outline-primary me-2">Log In</a>
-                        <a href="<?= $basePath ?>auth/signup.php" class="btn btn-primary">Sign Up</a>
+                        <a href="<?= $basePath ?>auth/login.php" class="btn btn-outline-primary btn-sm me-2 px-3">Log In</a>
+                        <a href="<?= $basePath ?>auth/signup.php" class="btn btn-primary btn-sm px-3">Sign Up</a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -114,21 +145,28 @@ function isActive($pages) {
                 }
 
                 // Update notification count
-                $('.notification-count').text(response.unread_count);
+                $('.notification-count').text(response.unread_count || 0);
 
                 // Update notification list
                 const notificationList = $('#notification-list');
                 notificationList.empty();
                 if (response.notifications.length === 0) {
-                    notificationList.append('<li class="dropdown-item text-muted">No notifications</li>');
+                    notificationList.append('<li class="dropdown-item text-center text-muted py-3">No notifications</li>');
                 } else {
                     response.notifications.forEach(notif => {
-                        const isUnread = notif.is_read == 0 ? 'unread' : '';
+                        const isUnread = notif.is_read == 0 ? 'bg-light' : '';
                         const date = new Date(notif.created_at).toLocaleString();
                         notificationList.append(`
-                            <li class="notification-item ${isUnread}">
-                                <div>${notif.message}</div>
-                                <small class="text-muted">${date}</small>
+                            <li class="dropdown-item ${isUnread} p-0">
+                                <a href="#" class="d-block px-3 py-3 border-bottom">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-info-circle text-primary me-2 mt-1"></i>
+                                        <div class="flex-grow-1">
+                                            <div>${notif.message}</div>
+                                            <small class="text-muted">${date}</small>
+                                        </div>
+                                    </div>
+                                </a>
                             </li>
                         `);
                     });
@@ -149,7 +187,8 @@ function isActive($pages) {
             data: { mark_read: true },
             success: function() {
                 console.log('Notifications marked as read, resetting count to 0');
-                $('.notification-count').text('0');
+                $('.notification-count').text('0').hide().fadeIn();
+                fetchNotifications(); // Refresh list
             },
             error: function(xhr, status, error) {
                 console.error('Error marking notifications as read:', error);
@@ -159,47 +198,50 @@ function isActive($pages) {
 
     // Real-Time Unread Messages
     function fetchUnreadMessages() {
-    console.log('Fetching unread messages...');
-    console.log('Request URL:', '<?= $basePath ?>fetch_unread_messages.php');
-    $.ajax({
-        url: '<?= $basePath ?>fetch_unread_messages.php',
-        method: 'GET',
-        dataType: 'json',
-        success: function(response) {
-            console.log('Unread messages response:', response);
-            if (response.error) {
-                console.error('Error in fetchUnreadMessages:', response.error);
-                return;
-            }
+        console.log('Fetching unread messages...');
+        $.ajax({
+            url: '<?= $basePath ?>fetch_unread_messages.php',
+            method: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                console.log('Unread messages response:', response);
+                if (response.error) {
+                    console.error('Error in fetchUnreadMessages:', response.error);
+                    return;
+                }
 
-            // Update message count
-            console.log('Updating message count to:', response.unread_count);
-            $('.message-count').text(response.unread_count);
+                // Update message count
+                $('.message-count').text(response.unread_count || 0);
 
-            // Update message list
-            const messageList = $('#message-list');
-            messageList.empty();
-            if (response.messages.length === 0) {
-                messageList.append('<li class="dropdown-item text-muted">No unread messages</li>');
-            } else {
-                response.messages.forEach(msg => {
-                    const date = new Date(msg.created_at).toLocaleString();
-                    messageList.append(`
-                        <li class="message-item">
-                            <div><strong>${msg.event_type}</strong>: ${msg.message}</div>
-                            <small class="text-muted">${date}</small>
-                        </li>
-                    `);
-                });
+                // Update message list
+                const messageList = $('#message-list');
+                messageList.empty();
+                if (response.messages.length === 0) {
+                    messageList.append('<li class="dropdown-item text-center text-muted py-3">No unread messages</li>');
+                } else {
+                    response.messages.forEach(msg => {
+                        const date = new Date(msg.created_at).toLocaleString();
+                        messageList.append(`
+                            <li class="dropdown-item p-0">
+                                <a href="#" class="d-block px-3 py-3 border-bottom">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-envelope-open-text text-info me-2 mt-1"></i>
+                                        <div class="flex-grow-1">
+                                            <div><strong>${msg.event_type}</strong>: ${msg.message}</div>
+                                            <small class="text-muted">${date}</small>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        `);
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching messages:', error);
             }
-        },
-        error: function(xhr, status, error) {
-            console.error('Error fetching messages:', error);
-            console.error('Status:', status);
-            console.error('Response Text:', xhr.responseText);
-        }
-    });
-}
+        });
+    }
 
     // Mark messages as read when dropdown is fully opened
     $('#inboxIcon').on('shown.bs.dropdown', function() {
@@ -210,7 +252,8 @@ function isActive($pages) {
             data: { mark_read: true },
             success: function() {
                 console.log('Messages marked as read, resetting count to 0');
-                $('.message-count').text('0');
+                $('.message-count').text('0').hide().fadeIn();
+                fetchUnreadMessages(); // Refresh list
             },
             error: function(xhr, status, error) {
                 console.error('Error marking messages as read:', error);

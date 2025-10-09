@@ -62,10 +62,14 @@ $currentDate = new DateTime();
     <link href="lib/lightbox/css/lightbox.min.css" rel="stylesheet">
     <link href="lib/owlcarousel/owl.carousel.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+
     <link href="css/style.css" rel="stylesheet">
     <link href="css/themes.css" rel="stylesheet">
     <link href="css/profile.css" rel="stylesheet">
     <link href="css/booking.css" rel="stylesheet">
+
+    
     <style>
         .category-badge {
             font-size: 0.85rem;
