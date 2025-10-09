@@ -115,9 +115,9 @@ function isActive($pages) {
                 <li><a class="dropdown-item px-3 py-2" href="../admin/settings.php">
                     <i class="fas fa-cog me-2"></i>Settings
                 </a></li>
-                <li><a class="dropdown-item px-3 py-2" href="../profile.php">
+                <!-- <li><a class="dropdown-item px-3 py-2" href="../profile.php">
                     <i class="fas fa-user me-2"></i>Profile
-                </a></li>
+                </a></li> -->
                 <li><hr class="dropdown-divider my-0"></li>
                 <li><a class="dropdown-item text-danger px-3 py-2" href="../auth/logout_admin.php">
                     <i class="fas fa-sign-out-alt me-2"></i>Sign out
