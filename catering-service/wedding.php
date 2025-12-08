@@ -47,7 +47,7 @@ try {
 
 // Fetch active wedding menu items for custom package
 try {
-    $menus_stmt = $db->prepare("SELECT * FROM menus WHERE service_type = 'wedding' AND status = 'active'");
+    $menus_stmt = $db->prepare("SELECT m.*, c.category_name FROM menus m LEFT JOIN menu_categories c ON m.category_id = c.category_id WHERE m.service_type = 'wedding' AND m.status = 'active' ORDER BY c.category_name, m.title");
     $menus_stmt->execute();
     $wedding_menus = $menus_stmt->fetchAll(PDO::FETCH_ASSOC);
     
@@ -555,14 +555,14 @@ try {
                                 <label class="form-label">Location</label>
                                 <input type="text" class="form-control" name="location" required>
                             </div>
-                            <div class="col-12">
+                            <!-- <div class="col-12">
                                 <label class="form-label">Additional Requests (Optional)</label>
                                 <textarea class="form-control" name="additional_requests" rows="3"></textarea>
                             </div>
                             <div class="col-12">
                                 <label class="form-label">Special Requirements (Optional)</label>
                                 <textarea class="form-control" name="special_requirements" rows="3"></textarea>
-                            </div>
+                            </div> -->
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -1069,7 +1069,7 @@ try {
 
             // Group menus by category
             const groupedMenus = weddingMenus.reduce((acc, menu) => {
-                const category = menu.category || 'Uncategorized';
+                const category = menu.category_name || 'Uncategorized'; // Use category_name from the joined table
                 if (!acc[category]) {
                     acc[category] = [];
                 }

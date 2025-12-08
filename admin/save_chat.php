@@ -1,9 +1,25 @@
 <?php
+// Disable error output to prevent any unwanted output in JSON response
+error_reporting(0);
+ini_set('display_errors', 0);
+
+// Start output buffering immediately to prevent any unwanted output
+ob_start();
+
 // Require database connection
 require '../db.php';
 
+// Clean any previous output after including db.php
+ob_clean();
+
 // Start or resume session for potential context checks (if needed later)
 session_start();
+
+// Set content type to JSON
+header('Content-Type: application/json');
+
+// Clean any previous output
+ob_clean();
 
 // Log the incoming POST request for debugging
 error_log("Received POST request: " . print_r($_POST, true));
@@ -51,9 +67,9 @@ if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
     $fileName = 'booking_' . $booking_id . '_' . time() . '_' . basename($_FILES['file']['name']);
     $filePath = $uploadDir . $fileName;
 
-    // Validate file type and size (e.g., max 5MB, allow images and PDFs)
+    // Validate file type and size (e.g., max 100MB, allow images and PDFs)
     $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
-    $maxFileSize = 5 * 1024 * 1024; // 5MB
+    $maxFileSize = 100 * 1024 * 1024; // 100MB
     $fileType = mime_content_type($_FILES['file']['tmp_name']);
     $fileSize = $_FILES['file']['size'];
 
@@ -64,6 +80,21 @@ if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
 
     if ($fileSize > $maxFileSize) {
         echo json_encode(['success' => false, 'message' => 'File size exceeds the 5MB limit.']);
+        exit;
+    }
+
+    // Ensure the upload directory exists and is writable
+    if (!is_dir($uploadDir)) {
+        if (!mkdir($uploadDir, 0755, true)) {
+            error_log("Failed to create directory: $uploadDir");
+            echo json_encode(['success' => false, 'message' => 'Failed to create upload directory']);
+            exit;
+        }
+    }
+
+    if (!is_writable($uploadDir)) {
+        error_log("Directory not writable: $uploadDir");
+        echo json_encode(['success' => false, 'message' => 'Upload directory not writable']);
         exit;
     }
 
@@ -98,8 +129,10 @@ try {
     // Log successful save for debugging
     error_log("Message saved successfully for booking_id=$booking_id by $sender with is_unread=$is_unread");
 
-    // Return success response for AJAX
+    // Clean output buffer and return success response for AJAX
+    ob_end_clean();
     echo json_encode(['success' => true]);
+    exit;
 
 } catch (PDOException $e) {
     // Log database error for debugging
@@ -108,16 +141,3 @@ try {
     exit;
 }
 ?>
-<!-- 
-CREATE TABLE chat_messages (
-    message_id INT AUTO_INCREMENT PRIMARY KEY,
-    order_id INT NOT NULL,
-    user_id INT NOT NULL,
-    sender VARCHAR(10) NOT NULL, -- 'user' or 'admin'
-    message TEXT NOT NULL,
-    file_path VARCHAR(255) DEFAULT NULL,
-    is_unread TINYINT(1) DEFAULT 0, -- Default to 0 (read)
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (order_id) REFERENCES event_bookings(booking_id),
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
-); -->

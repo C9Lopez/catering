@@ -31,7 +31,7 @@ try {
             $customerName = htmlspecialchars($row['first_name'] . ' ' . $row['last_name']);
 
             // Expanded row content
-            $isCustom = (strtolower($row['package_name']) === 'custom wedding package');
+            $isCustom = (strtolower($row['package_name']) === 'custom wedding package' || strtolower($row['package_name']) === 'custom debut package');
             $customDetails = '';
             if ($isCustom) {
                 // Fetch customizations from event_bookings table (assume field: customizations)

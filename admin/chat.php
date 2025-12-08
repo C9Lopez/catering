@@ -321,6 +321,10 @@ try {
             const formData = new FormData(this);
             formData.append('message', message);
 
+            // Clear the input immediately after creating formData
+            $('#message').val('');
+            $('#fileInput').val('');
+
             $.ajax({
                 url: 'save_chat.php',
                 method: 'POST',
@@ -328,17 +332,24 @@ try {
                 processData: false,
                 contentType: false,
                 success: function(response) {
-                    const data = JSON.parse(response);
-                    if (data.success) {
-                        $('#message').val('');
-                        $('#fileInput').val('');
-                        fetchMessages();
-                    } else {
-                        alert('Error: ' + (data.message || 'Failed to send message'));
+                    try {
+                        const data = typeof response === 'string' ? JSON.parse(response) : response;
+                        if (data.success) {
+                            fetchMessages();
+                        } else {
+                            // If failed, put back the message
+                            $('#message').val(message);
+                            alert('Error: ' + (data.message || 'Failed to send message'));
+                        }
+                    } catch (e) {
+                        console.error('JSON parse error:', e);
+                        $('#message').val(message);
+                        alert('Unexpected response from server');
                     }
                 },
                 error: function(xhr, status, error) {
                     console.error('Error sending message:', { status: status, error: error, responseText: xhr.responseText });
+                    $('#message').val(message);
                     alert('Error sending message: ' + error + ' (Status: ' + status + ')');
                 }
             });

@@ -80,12 +80,13 @@ try {
             $fileExtension = strtolower(pathinfo($msg['file_path'], PATHINFO_EXTENSION));
             $imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
             echo "<div class='file-attachment'>";
+            $pathPrefix = ($context === 'admin') ? '../' : '';
             if (in_array($fileExtension, $imageExtensions)) {
-                echo "<a href='../" . htmlspecialchars($msg['file_path']) . "' target='_blank'>";
-                echo "<img src='../" . htmlspecialchars($msg['file_path']) . "' alt='Attachment'>";
+                echo "<a href='" . $pathPrefix . htmlspecialchars($msg['file_path']) . "' target='_blank'>";
+                echo "<img src='" . $pathPrefix . htmlspecialchars($msg['file_path']) . "' alt='Attachment'>";
                 echo "</a>";
             } else {
-                echo "<a href='../" . htmlspecialchars($msg['file_path']) . "' target='_blank'>";
+                echo "<a href='" . $pathPrefix . htmlspecialchars($msg['file_path']) . "' target='_blank'>";
                 echo "<i class='fas fa-file'></i> Download Attachment";
                 echo "</a>";
             }

@@ -266,4 +266,11 @@ function isActive($pages) {
     fetchUnreadMessages();
     setInterval(fetchNotifications, 10000);
     setInterval(fetchUnreadMessages, 10000);
+
+    // Function to open custom menu modal (scroll to custom menu section)
+    window.openCustomMenuModal = function() {
+        $('html, body').animate({
+            scrollTop: $('#customMenuAccordion').offset().top - 100
+        }, 500);
+    };
 </script>

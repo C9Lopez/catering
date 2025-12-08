@@ -11,7 +11,8 @@ if (isset($_GET['booking_id'])) {
 try {
     $stmt = $db->prepare("
         SELECT eb.booking_id, eb.location, eb.event_date, eb.event_time, eb.setup_time, eb.number_of_guests, eb.total_amount, eb.booking_status,
-               cp.name AS package_name, cp.category AS package_category,
+               COALESCE(cp.name, eb.event_type) AS package_name,
+               COALESCE(cp.category, CASE WHEN eb.event_type LIKE '%Children%' THEN 'Childrens Party Catering' WHEN eb.event_type LIKE '%Corporate%' THEN 'Corporate Catering' WHEN eb.event_type LIKE '%Private%' THEN 'Private Party Catering' ELSE 'N/A' END) AS package_category,
                u.first_name, u.middle_name, u.last_name, u.birthdate, u.gender, u.address, u.contact_no, u.email
         FROM event_bookings eb
         LEFT JOIN catering_packages cp ON eb.package_id = cp.package_id
@@ -31,7 +32,7 @@ try {
             $customerName = htmlspecialchars($row['first_name'] . ' ' . $row['last_name']);
 
             // Expanded row content
-            $isCustom = (strtolower($row['package_name']) === 'custom wedding package');
+            $isCustom = (strtolower($row['package_name']) === 'custom wedding package' || strtolower($row['package_name']) === 'custom debut package' || strtolower($row['package_name']) === 'custom children\'s party package' || strtolower($row['package_name']) === 'custom corporate package' || strtolower($row['package_name']) === 'custom private package');
             $customDetails = '';
             if ($isCustom) {
                 // Fetch customizations from event_bookings table (assume field: customizations)

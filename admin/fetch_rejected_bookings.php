@@ -11,7 +11,8 @@ if (isset($_GET['booking_id'])) {
 try {
     $stmt = $db->prepare("
         SELECT eb.booking_id, eb.location, eb.event_date, eb.event_time, eb.setup_time, eb.number_of_guests, eb.total_amount, eb.booking_status,
-               cp.name AS package_name, cp.category AS package_category,
+               COALESCE(cp.name, eb.event_type) AS package_name,
+               COALESCE(cp.category, CASE WHEN eb.event_type LIKE '%Children%' THEN 'Childrens Party Catering' WHEN eb.event_type LIKE '%Corporate%' THEN 'Corporate Catering' WHEN eb.event_type LIKE '%Private%' THEN 'Private Party Catering' ELSE 'N/A' END) AS package_category,
                u.first_name, u.middle_name, u.last_name, u.birthdate, u.gender, u.address, u.contact_no, u.email
         FROM event_bookings eb
         LEFT JOIN catering_packages cp ON eb.package_id = cp.package_id
@@ -31,6 +32,37 @@ try {
             $customerName = htmlspecialchars($row['first_name'] . ' ' . $row['last_name']);
 
             // Expanded row content
+            $isCustom = (strtolower($row['package_name']) === 'custom wedding package' || strtolower($row['package_name']) === 'custom debut package' || strtolower($row['package_name']) === 'custom children\'s party package' || strtolower($row['package_name']) === 'custom corporate package' || strtolower($row['package_name']) === 'custom private package');
+            $customDetails = '';
+            if ($isCustom) {
+                // Fetch customizations from event_bookings table (assume field: customizations)
+                $customStmt = $db->prepare("SELECT customizations FROM event_bookings WHERE booking_id = ?");
+                $customStmt->execute([$row['booking_id']]);
+                $customRow = $customStmt->fetch(PDO::FETCH_ASSOC);
+                $customizations = [];
+                if ($customRow && !empty($customRow['customizations'])) {
+                    $customizations = json_decode($customRow['customizations'], true);
+                }
+                $customDetails .= "<div class='mt-3'><h6>Custom Menu Details</h6>";
+                if (!empty($customizations) && is_array($customizations)) {
+                    $customDetails .= "<table class='table table-bordered table-sm'><thead><tr><th>Menu Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>";
+                    $grandTotal = 0;
+                    foreach ($customizations as $item) {
+                        $itemTitle = htmlspecialchars(isset($item['title']) ? $item['title'] : (isset($item['label']) ? $item['label'] : ''));
+                        $itemQty = intval($item['quantity'] ?? ($item['qty'] ?? 0));
+                        $itemPrice = floatval($item['price'] ?? 0);
+                        $itemTotal = $itemQty * $itemPrice;
+                        $grandTotal += $itemTotal;
+                        $customDetails .= "<tr><td>{$itemTitle}</td><td>{$itemQty}</td><td>₱" . number_format($itemPrice, 2) . "</td><td>₱" . number_format($itemTotal, 2) . "</td></tr>";
+                    }
+                    $customDetails .= "<tr><th colspan='3' class='text-end'>Total</th><th>₱" . number_format($grandTotal, 2) . "</th></tr>";
+                    $customDetails .= "</tbody></table>";
+                } else {
+                    $customDetails .= "<div class='text-danger'>No custom menu items found. <small>(Check if customizations were saved in the booking record.)</small></div>";
+                }
+                $customDetails .= "<div><strong>Number of Guests:</strong> " . htmlspecialchars($row['number_of_guests'] ?? 'N/A') . "</div>";
+                $customDetails .= "</div>";
+            }
             $detailsContent = "
                 <div class='details-content'>
                     <div>
@@ -48,6 +80,7 @@ try {
                         <p><strong>Time:</strong> " . htmlspecialchars($row['event_time']) . "</p>
                         <p><strong>Setup Time:</strong> " . htmlspecialchars($row['setup_time']) . "</p>
                         <p><strong>Location:</strong> " . htmlspecialchars($row['location']) . "</p>
+                        $customDetails
                     </div>
                 </div>
             ";

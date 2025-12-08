@@ -4,18 +4,18 @@ session_start();
 require '../db.php';
 
 // Fetch menus for wedding service type
-try {
-    $stmt = $db->prepare("SELECT * FROM menus WHERE service_type = 'debut' ORDER BY category");
+try { // Changed query to join menu_categories and select category_name
+    $stmt = $db->prepare("SELECT m.*, c.category_name FROM menus m LEFT JOIN menu_categories c ON m.category_id = c.category_id WHERE m.service_type = 'debut' AND m.status = 'active' ORDER BY c.category_name, m.title");
     $stmt->execute();
     $menus = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo '<div class="alert alert-warning">Unable to load menus</div>';
 }
 
-// Group menus by category
+// Group menus by category_name
 $grouped_menus = [];
 foreach ($menus as $menu) {
-    $grouped_menus[$menu['category']][] = $menu;
+    $grouped_menus[$menu['category_name']][] = $menu; // Use category_name for grouping
 }
 ?>
 
